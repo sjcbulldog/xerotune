@@ -1,0 +1,9 @@
+**/x64
+**/Debug
+**/Release
+generators/*.exe
+.vs
+docs
+*.csv
+xeropathgen
+**/*.o
