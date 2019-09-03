@@ -7,7 +7,10 @@ PlotManager::PlotManager(NetworkTableMonitor& monitor, QListWidget& plots, QList
 
 	nodes_.setSelectionMode(QAbstractItemView::SingleSelection);
 	nodes_.setDragEnabled(true);
-	nodes_.setDragDropMode(QAbstractItemView::DragDrop);
+	nodes_.setDragDropMode(QAbstractItemView::DragOnly);
+
+	plots_.setDragEnabled(false);
+	plots_.setDragDropMode(QAbstractItemView::NoDragDrop);
 
 	current_ = nullptr;
 }
