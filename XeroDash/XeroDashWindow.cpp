@@ -1,16 +1,19 @@
 #include "XeroDashWindow.h"
 #include "PlotContainer.h"
 #include "PropertyEditor.h"
+#include <QLineEdit>
 
 XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 {
 	count_ = 0;
+	editor_ = nullptr;
 
 	ui.setupUi(this);
 	plot_mgr_ = new PlotManager(monitor_, *ui.plots_, *ui.nodes_);
 	ui.graphs_->clear();
 
 	(void)connect(ui.graphs_, &QTabWidget::tabCloseRequested, this, &XeroDashWindow::closeTab);
+	(void)connect(ui.graphs_->tabBar(), &QTabBar::tabBarDoubleClicked, this, &XeroDashWindow::editTab);
 
 	if (settings_.contains(GeometrySettings))
 		restoreGeometry(settings_.value(GeometrySettings).toByteArray());
@@ -159,4 +162,41 @@ void XeroDashWindow::closeTab(int which)
 	ui.graphs_->removeTab(which);
 
 	delete cnt;
+}
+
+void XeroDashWindow::editTab(int which)
+{
+	which_tab_ = which;
+
+	QTabBar* bar = ui.graphs_->tabBar();
+
+	QRect r = bar->tabRect(which);
+
+	if (editor_ == nullptr)
+	{
+		editor_ = new TabEditName(bar);
+		(void)connect(editor_, &TabEditName::returnPressed, this, &XeroDashWindow::editTabDone);
+		(void)connect(editor_, &TabEditName::escapePressed, this, &XeroDashWindow::editTabAborted);
+	}
+
+	editor_->setGeometry(r);
+	editor_->setFocus(Qt::FocusReason::OtherFocusReason);
+	editor_->selectAll();
+	editor_->setVisible(true);
+	editor_->setText(bar->tabText(which));
+
+}
+
+void XeroDashWindow::editTabDone()
+{
+	QTabBar* bar = ui.graphs_->tabBar();
+	QString txt = editor_->text();
+
+	editor_->setVisible(false);
+	bar->setTabText(which_tab_, txt);
+}
+
+void XeroDashWindow::editTabAborted()
+{
+	editor_->setVisible(false);
 }

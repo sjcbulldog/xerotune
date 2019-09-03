@@ -2,6 +2,7 @@
 
 #include "NetworkTableMonitor.h"
 #include "PlotManager.h"
+#include "TabEditName.h"
 #include <QtWidgets/QMainWindow>
 #include <QTimer>
 #include <QSettings>
@@ -31,6 +32,9 @@ private:
 	void newTab();
 	void editPreferences();
 	void closeTab(int which);
+	void editTab(int which);
+	void editTabDone();
+	void editTabAborted();
 
 private:
 	static constexpr const char* GeometrySettings = "geometry";
@@ -54,6 +58,8 @@ private:
 	QString units_;
 	QString ipaddr_;
 	QString table_name_;
+	TabEditName* editor_;
+	int which_tab_;
 
 	std::list<std::shared_ptr<PlotDescriptor>> update_list_;
 };

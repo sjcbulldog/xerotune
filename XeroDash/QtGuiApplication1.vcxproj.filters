@@ -66,6 +66,9 @@
     <ClCompile Include="EditableTabWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TabEditName.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="PlotDescriptor.h">
@@ -87,6 +90,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="EditableTabWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="TabEditName.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
