@@ -54,11 +54,17 @@
     <ClCompile Include="Callout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PropertyEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PropertyEditorItemDelegate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PropertyEditorTreeModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="XeroDashWindow.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="PlotDescriptor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -71,9 +77,18 @@
     <QtMoc Include="SingleChart.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="XeroDashWindow.h">
+      <Filter>Generated Files</Filter>
+    </QtMoc>
+    <QtMoc Include="PropertyEditor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="XeroDashWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="PropertyEditor.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -90,6 +105,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Callout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditableProperty.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyEditorItemDelegate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertyEditorTreeModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

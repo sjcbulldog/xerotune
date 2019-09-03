@@ -15,8 +15,10 @@ class SingleChart : public QtCharts::QChartView
 	Q_OBJECT
 
 public:
-	SingleChart(PlotManager& mgr, QWidget *parent = Q_NULLPTR);
+	SingleChart(QString units, PlotManager& mgr, QWidget *parent = Q_NULLPTR);
 	~SingleChart();
+
+	void setUnits(QString units);
 
 protected:
 	virtual void dragEnterEvent(QDragEnterEvent* event) override;

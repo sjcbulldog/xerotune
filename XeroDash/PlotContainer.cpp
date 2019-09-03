@@ -8,10 +8,25 @@ PlotContainer::PlotContainer(PlotManager& mgr, QWidget *parent) : QWidget(parent
 	setLayout(layout_);
 	setMouseTracking(true);
 	setFocusPolicy(Qt::ClickFocus);
+
+	units_ = "in";
+
+	SingleChart* ch = new SingleChart(units_, plot_mgr_, this);
+	charts_.push_back(ch);
+	layout_->addWidget(ch, 0, 0);
+	arrangeCharts();
 }
 
 PlotContainer::~PlotContainer()
 {
+}
+
+void PlotContainer::setUnits(QString units)
+{
+	units_ = units;
+
+	for (auto chart : charts_)
+		chart->setUnits(units_);
 }
 
 void PlotContainer::childFocused(SingleChart* ch)
@@ -28,7 +43,7 @@ void PlotContainer::keyPressEvent(QKeyEvent *ev)
 		if (charts_.size() == 9)
 			return;
 
-		SingleChart* ch = new SingleChart(plot_mgr_, this);
+		SingleChart* ch = new SingleChart(units_, plot_mgr_, this);
 		charts_.push_back(ch);
 		layout_->addWidget(ch, 0, 0);
 		arrangeCharts();

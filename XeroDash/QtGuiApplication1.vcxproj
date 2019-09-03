@@ -128,6 +128,9 @@
     <ClCompile Include="PlotContainer.cpp" />
     <ClCompile Include="PlotDescriptor.cpp" />
     <ClCompile Include="PlotManager.cpp" />
+    <ClCompile Include="PropertyEditor.cpp" />
+    <ClCompile Include="PropertyEditorItemDelegate.cpp" />
+    <ClCompile Include="PropertyEditorTreeModel.cpp" />
     <ClCompile Include="SingleChart.cpp" />
     <ClCompile Include="XeroDashWindow.cpp" />
   </ItemGroup>
@@ -135,6 +138,7 @@
     <QtMoc Include="XeroDashWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtUic Include="PropertyEditor.ui" />
     <QtUic Include="XeroDashWindow.ui" />
   </ItemGroup>
   <ItemGroup>
@@ -142,8 +146,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Callout.h" />
+    <ClInclude Include="EditableProperty.h" />
     <ClInclude Include="NetworkTableMonitor.h" />
     <ClInclude Include="PlotNode.h" />
+    <ClInclude Include="PropertyEditorItemDelegate.h" />
+    <ClInclude Include="PropertyEditorTreeModel.h" />
+    <QtMoc Include="PropertyEditor.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)external\wpi\include;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCharts;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)external\wpi\include;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCharts;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets</IncludePath>
+    </QtMoc>
     <QtMoc Include="SingleChart.h">
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)external\wpi\include;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCharts;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets</IncludePath>
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)external\wpi\include;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCharts;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets</IncludePath>

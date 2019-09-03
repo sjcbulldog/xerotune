@@ -15,6 +15,10 @@ public:
 	~PlotContainer();
 
 	void childFocused(SingleChart*);
+	void setUnits(QString units);
+	QString units() const {
+		return units_;
+	}
 
 protected:
 	virtual void keyPressEvent(QKeyEvent* ev) override;
@@ -28,4 +32,5 @@ private:
 	QGridLayout* layout_;
 	QtCharts::QChartView* selected_;
 	std::vector<SingleChart *> charts_;
+	QString units_;
 };

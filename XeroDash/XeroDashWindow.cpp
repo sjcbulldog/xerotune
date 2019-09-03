@@ -1,17 +1,18 @@
 #include "XeroDashWindow.h"
 #include "PlotContainer.h"
+#include "PropertyEditor.h"
 
 XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 {
-	monitor_.setIPAddress("127.0.0.1");
-	monitor_.start("/XeroPlot/");
 	count_ = 1;
 
 	ui.setupUi(this);
 	plot_mgr_ = new PlotManager(monitor_, *ui.plots_, *ui.nodes_);
 
+	PlotContainer* cnt = new PlotContainer(*plot_mgr_);
+	containers_.push_back(cnt);
 	ui.graphs_->clear();
-	ui.graphs_->addTab(new PlotContainer(*plot_mgr_), "Plots");
+	ui.graphs_->addTab(cnt, "Plots");
 
 	if (settings_.contains(GeometrySettings))
 		restoreGeometry(settings_.value(GeometrySettings).toByteArray());
@@ -28,6 +29,26 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 		ui.splitter_->setSizes(sizes);
 	}
 
+	if (settings_.contains(PrefDialogUnits))
+		units_ = settings_.value(PrefDialogUnits).toString();
+	else
+		units_ = "in";
+
+	if (settings_.contains(NTIPAddress))
+		ipaddr_ = settings_.value(NTIPAddress).toString();
+	else
+		ipaddr_ = "127.0.0.1";
+
+	if (settings_.contains(NTPlotTable))
+		table_name_ = settings_.value(NTPlotTable).toString();
+	else
+		table_name_ = "XeroPlot";
+
+	cnt->setUnits(units_);
+
+	monitor_.setIPAddress(ipaddr_.toStdString());
+	monitor_.start(table_name_.toStdString());
+
 	timer_ = new QTimer(this);
 	(void)connect(timer_, &QTimer::timeout, this, &XeroDashWindow::timerProc);
 
@@ -37,7 +58,7 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	// Menuss
 	//
 	(void)connect(ui.action_new_tab_, &QAction::triggered, this, &XeroDashWindow::newTab);
-
+	(void)connect(ui.action_preferences_, &QAction::triggered, this, &XeroDashWindow::editPreferences);
 
 }
 
@@ -68,5 +89,58 @@ void XeroDashWindow::newTab()
 	count_++;
 
 	QString title = "Plots (" + QString::number(count_) + ")" ;
-	ui.graphs_->addTab(new PlotContainer(*plot_mgr_), title);
+	PlotContainer* cnt = new PlotContainer(*plot_mgr_);
+	containers_.push_back(cnt);
+	cnt->setUnits(units_);
+	ui.graphs_->addTab(cnt, title);
+}
+
+void XeroDashWindow::editPreferences()
+{
+	PropertyEditor dialog;
+	std::shared_ptr<EditableProperty> prop;
+
+	prop = std::make_shared<EditableProperty>(PrefDialogUnits, EditableProperty::PTStringList,
+		QVariant(units_), "The units of measurement");
+	prop->addChoice("m");
+	prop->addChoice("meters");
+	prop->addChoice("cm");
+	prop->addChoice("feet");
+	prop->addChoice("ft");
+	prop->addChoice("inches");
+	prop->addChoice("in");
+	dialog.getModel().addProperty(prop);
+
+	prop = std::make_shared<EditableProperty>(NTIPAddress, EditableProperty::PTString,
+		QVariant(ipaddr_), "The IP address of the Network Table server");
+	dialog.getModel().addProperty(prop);
+
+	prop = std::make_shared<EditableProperty>(NTPlotTable, EditableProperty::PTString,
+		QVariant(table_name_), "The path (with trailing slash) to the network table where plots are found");
+	dialog.getModel().addProperty(prop);
+
+	if (dialog.exec() == QDialog::Rejected)
+		return;
+
+	units_ = dialog.getModel().getProperty(PrefDialogUnits)->getValue().toString();
+	settings_.setValue(PrefDialogUnits, units_);
+
+	ipaddr_ = dialog.getModel().getProperty(NTIPAddress)->getValue().toString();
+	settings_.setValue(NTIPAddress, ipaddr_);
+
+	table_name_ = dialog.getModel().getProperty(NTPlotTable)->getValue().toString();
+	if (!table_name_.endsWith("/"))
+		table_name_ += "/";
+	if (!table_name_.startsWith("/"))
+		table_name_ = "/" + table_name_;
+	settings_.setValue(NTPlotTable, table_name_);
+
+	if (monitor_.stop(30 * 1000))
+	{
+		monitor_.setIPAddress(ipaddr_.toStdString());
+		monitor_.start(table_name_.toStdString());
+	}
+
+	for (PlotContainer* plot : containers_)
+		plot->setUnits(units_);
 }

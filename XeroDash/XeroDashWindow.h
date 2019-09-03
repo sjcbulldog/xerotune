@@ -7,6 +7,9 @@
 #include <QSettings>
 #include "ui_XeroDashWindow.h"
 #include <mutex>
+#include <list>
+
+class PlotContainer;
 
 class XeroDashWindow : public QMainWindow
 {
@@ -25,11 +28,16 @@ private:
 	void timerProc();
 	void updatePlot(std::shared_ptr<PlotDescriptor> desc);
 	void newTab();
+	void editPreferences();
 
 private:
 	static constexpr const char* GeometrySettings = "geometry";
 	static constexpr const char* WindowStateSettings = "windowstate";
 	static constexpr const char* TopSplitterSettings = "topsplitter";
+
+	static constexpr const char* PrefDialogUnits = "Units";
+	static constexpr const char* NTIPAddress = "IP Address Network Tables";
+	static constexpr const char* NTPlotTable = "Name of table with plot data";
 
 private:
 	Ui::XeroDashWindowClass ui;
@@ -39,6 +47,10 @@ private:
 	QSettings settings_;
 	std::mutex lock_;
 	int count_;
+	QString units_;
+	QString ipaddr_;
+	QString table_name_;
 
+	std::list<PlotContainer *> containers_;
 	std::list<std::shared_ptr<PlotDescriptor>> update_list_;
 };

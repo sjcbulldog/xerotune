@@ -20,7 +20,6 @@ NetworkTableMonitor::NetworkTableMonitor()
 NetworkTableMonitor::~NetworkTableMonitor()
 {
 	stop(1000 * 10);
-	thread_.join();
 	assert(theOne == this);
 	theOne = nullptr;
 }
@@ -75,6 +74,10 @@ bool NetworkTableMonitor::stop(int waitms)
 		std::this_thread::sleep_for(delay);
 		waitms--;
 	}
+
+	if (stopped_ && thread_.joinable())
+		thread_.join();
+
 
 	return stopped_;
 }

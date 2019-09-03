@@ -6,7 +6,7 @@
 
 using namespace QtCharts;
 
-SingleChart::SingleChart(PlotManager &mgr, QWidget *parent) : QChartView(parent), plot_mgr_(mgr)
+SingleChart::SingleChart(QString units, PlotManager &mgr, QWidget *parent) : QChartView(parent), plot_mgr_(mgr)
 {
 	chart()->setDropShadowEnabled(true);
 	setAcceptDrops(true);
@@ -24,7 +24,7 @@ SingleChart::SingleChart(PlotManager &mgr, QWidget *parent) : QChartView(parent)
 
 	setRubberBand(QChartView::RectangleRubberBand);
 
-	units_ = "in";
+	units_ = units;
 	callout_ = nullptr;
 	first_ = nullptr;
 
@@ -34,6 +34,18 @@ SingleChart::SingleChart(PlotManager &mgr, QWidget *parent) : QChartView(parent)
 
 SingleChart::~SingleChart()
 {
+}
+
+void SingleChart::setUnits(QString units)
+{
+	QString oldunits = units_;
+
+	units_ = units;
+	for (auto axis : chart()->axes())
+	{
+		QString newname = axis->titleText().replace(oldunits, units_);
+		axis->setTitleText(newname);
+	}
 }
 
 void SingleChart::focusInEvent(QFocusEvent* ev)
