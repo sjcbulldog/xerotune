@@ -22,7 +22,7 @@
       </property>
       <widget class="QListWidget" name="plots_"/>
       <widget class="QListWidget" name="nodes_"/>
-      <widget class="QTabWidget" name="graphs_">
+      <widget class="EditableTabWidget" name="graphs_">
        <property name="currentIndex">
         <number>0</number>
        </property>
@@ -119,6 +119,14 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>EditableTabWidget</class>
+   <extends>QTabWidget</extends>
+   <header>editabletabwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="XeroDashWindow.qrc"/>
  </resources>

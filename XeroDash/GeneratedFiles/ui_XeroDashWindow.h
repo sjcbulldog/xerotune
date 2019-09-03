@@ -19,9 +19,9 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QStatusBar>
-#include <QtWidgets/QTabWidget>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QWidget>
+#include "editabletabwidget.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -38,7 +38,7 @@ public:
     QSplitter *splitter_;
     QListWidget *plots_;
     QListWidget *nodes_;
-    QTabWidget *graphs_;
+    EditableTabWidget *graphs_;
     QWidget *tab;
     QWidget *tab_2;
     QMenuBar *menuBar;
@@ -79,7 +79,7 @@ public:
         nodes_ = new QListWidget(splitter_);
         nodes_->setObjectName(QString::fromUtf8("nodes_"));
         splitter_->addWidget(nodes_);
-        graphs_ = new QTabWidget(splitter_);
+        graphs_ = new EditableTabWidget(splitter_);
         graphs_->setObjectName(QString::fromUtf8("graphs_"));
         tab = new QWidget();
         tab->setObjectName(QString::fromUtf8("tab"));

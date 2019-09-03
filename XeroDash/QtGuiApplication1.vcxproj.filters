@@ -63,6 +63,9 @@
     <ClCompile Include="PropertyEditorTreeModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EditableTabWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="PlotDescriptor.h">
@@ -81,6 +84,9 @@
       <Filter>Generated Files</Filter>
     </QtMoc>
     <QtMoc Include="PropertyEditor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="EditableTabWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

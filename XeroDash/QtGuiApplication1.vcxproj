@@ -123,6 +123,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Callout.cpp" />
+    <ClCompile Include="EditableTabWidget.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetworkTableMonitor.cpp" />
     <ClCompile Include="PlotContainer.cpp" />
@@ -147,6 +148,10 @@
   <ItemGroup>
     <ClInclude Include="Callout.h" />
     <ClInclude Include="EditableProperty.h" />
+    <QtMoc Include="EditableTabWidget.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)external\wpi\include;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCharts;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)external\wpi\include;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCharts;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets</IncludePath>
+    </QtMoc>
     <ClInclude Include="NetworkTableMonitor.h" />
     <ClInclude Include="PlotNode.h" />
     <ClInclude Include="PropertyEditorItemDelegate.h" />
