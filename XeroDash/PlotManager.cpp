@@ -54,6 +54,7 @@ void PlotManager::tick()
 			break;
 
 		QListWidgetItem* item = desc->item();
+		QString txt = item->text();
 		item->setFlags(Qt::NoItemFlags);
 		plots_.addItem(item);
 

@@ -260,7 +260,7 @@ void SingleChart::insertNode(QString node)
 			return;
 	}
 
-	if (!desc_->hasColumns() || !desc_->hasData())
+	if (!desc_->hasColumns())
 		return;
 
 	size_t colidx = desc_->getColumnIndexFromName(node.toStdString());

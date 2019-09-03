@@ -4,15 +4,13 @@
 
 XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 {
-	count_ = 1;
+	count_ = 0;
 
 	ui.setupUi(this);
 	plot_mgr_ = new PlotManager(monitor_, *ui.plots_, *ui.nodes_);
-
-	PlotContainer* cnt = new PlotContainer(*plot_mgr_);
-	containers_.push_back(cnt);
 	ui.graphs_->clear();
-	ui.graphs_->addTab(cnt, "Plots");
+
+	(void)connect(ui.graphs_, &QTabWidget::tabCloseRequested, this, &XeroDashWindow::closeTab);
 
 	if (settings_.contains(GeometrySettings))
 		restoreGeometry(settings_.value(GeometrySettings).toByteArray());
@@ -44,10 +42,10 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	else
 		table_name_ = "XeroPlot";
 
-	cnt->setUnits(units_);
-
 	monitor_.setIPAddress(ipaddr_.toStdString());
 	monitor_.start(table_name_.toStdString());
+
+	newTab();
 
 	timer_ = new QTimer(this);
 	(void)connect(timer_, &QTimer::timeout, this, &XeroDashWindow::timerProc);
@@ -90,9 +88,10 @@ void XeroDashWindow::newTab()
 
 	QString title = "Plots (" + QString::number(count_) + ")" ;
 	PlotContainer* cnt = new PlotContainer(*plot_mgr_);
-	containers_.push_back(cnt);
 	cnt->setUnits(units_);
-	ui.graphs_->addTab(cnt, title);
+	int index = ui.graphs_->addTab(cnt, title);
+	QWidget* widget = ui.graphs_->widget(index);
+	widget->setProperty(ContainerPropName, QVariant(0, cnt));
 }
 
 void XeroDashWindow::editPreferences()
@@ -141,6 +140,23 @@ void XeroDashWindow::editPreferences()
 		monitor_.start(table_name_.toStdString());
 	}
 
-	for (PlotContainer* plot : containers_)
-		plot->setUnits(units_);
+	for (size_t i = 0; i < ui.graphs_->count(); i++)
+	{
+		QWidget* widget = ui.graphs_->widget(i);
+		QVariant v = widget->property(ContainerPropName);
+		void* ptr = static_cast<void*>(v.value<void*>());
+		PlotContainer* cnt = static_cast<PlotContainer*>(ptr);
+		cnt->setUnits(units_);
+	}
+}
+
+void XeroDashWindow::closeTab(int which)
+{
+	QWidget* widget = ui.graphs_->widget(which);
+	QVariant v = widget->property(ContainerPropName);
+	void* ptr = static_cast<void*>(v.value<void*>());
+	PlotContainer* cnt = static_cast<PlotContainer*>(ptr);
+	ui.graphs_->removeTab(which);
+
+	delete cnt;
 }

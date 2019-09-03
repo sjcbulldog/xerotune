@@ -8,6 +8,7 @@
 #include "ui_XeroDashWindow.h"
 #include <mutex>
 #include <list>
+#include <map>
 
 class PlotContainer;
 
@@ -29,6 +30,7 @@ private:
 	void updatePlot(std::shared_ptr<PlotDescriptor> desc);
 	void newTab();
 	void editPreferences();
+	void closeTab(int which);
 
 private:
 	static constexpr const char* GeometrySettings = "geometry";
@@ -38,6 +40,8 @@ private:
 	static constexpr const char* PrefDialogUnits = "Units";
 	static constexpr const char* NTIPAddress = "IP Address Network Tables";
 	static constexpr const char* NTPlotTable = "Name of table with plot data";
+
+	static constexpr const char* ContainerPropName = "plot";
 
 private:
 	Ui::XeroDashWindowClass ui;
@@ -51,6 +55,5 @@ private:
 	QString ipaddr_;
 	QString table_name_;
 
-	std::list<PlotContainer *> containers_;
 	std::list<std::shared_ptr<PlotDescriptor>> update_list_;
 };

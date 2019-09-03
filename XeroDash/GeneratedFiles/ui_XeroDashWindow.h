@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
@@ -20,6 +21,7 @@
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
+#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include "editabletabwidget.h"
 
@@ -36,7 +38,13 @@ public:
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout;
     QSplitter *splitter_;
+    QWidget *verticalLayoutWidget;
+    QVBoxLayout *verticalLayout;
+    QLabel *label;
     QListWidget *plots_;
+    QWidget *verticalLayoutWidget_2;
+    QVBoxLayout *verticalLayout_2;
+    QLabel *label_2;
     QListWidget *nodes_;
     EditableTabWidget *graphs_;
     QWidget *tab;
@@ -73,12 +81,45 @@ public:
         splitter_ = new QSplitter(centralWidget);
         splitter_->setObjectName(QString::fromUtf8("splitter_"));
         splitter_->setOrientation(Qt::Horizontal);
-        plots_ = new QListWidget(splitter_);
+        verticalLayoutWidget = new QWidget(splitter_);
+        verticalLayoutWidget->setObjectName(QString::fromUtf8("verticalLayoutWidget"));
+        verticalLayout = new QVBoxLayout(verticalLayoutWidget);
+        verticalLayout->setSpacing(6);
+        verticalLayout->setContentsMargins(11, 11, 11, 11);
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setContentsMargins(0, 0, 0, 0);
+        label = new QLabel(verticalLayoutWidget);
+        label->setObjectName(QString::fromUtf8("label"));
+        label->setAlignment(Qt::AlignCenter);
+
+        verticalLayout->addWidget(label);
+
+        plots_ = new QListWidget(verticalLayoutWidget);
         plots_->setObjectName(QString::fromUtf8("plots_"));
-        splitter_->addWidget(plots_);
-        nodes_ = new QListWidget(splitter_);
+        plots_->setAcceptDrops(false);
+
+        verticalLayout->addWidget(plots_);
+
+        splitter_->addWidget(verticalLayoutWidget);
+        verticalLayoutWidget_2 = new QWidget(splitter_);
+        verticalLayoutWidget_2->setObjectName(QString::fromUtf8("verticalLayoutWidget_2"));
+        verticalLayout_2 = new QVBoxLayout(verticalLayoutWidget_2);
+        verticalLayout_2->setSpacing(6);
+        verticalLayout_2->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
+        verticalLayout_2->setContentsMargins(0, 0, 0, 0);
+        label_2 = new QLabel(verticalLayoutWidget_2);
+        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setAlignment(Qt::AlignCenter);
+
+        verticalLayout_2->addWidget(label_2);
+
+        nodes_ = new QListWidget(verticalLayoutWidget_2);
         nodes_->setObjectName(QString::fromUtf8("nodes_"));
-        splitter_->addWidget(nodes_);
+
+        verticalLayout_2->addWidget(nodes_);
+
+        splitter_->addWidget(verticalLayoutWidget_2);
         graphs_ = new EditableTabWidget(splitter_);
         graphs_->setObjectName(QString::fromUtf8("graphs_"));
         tab = new QWidget();
@@ -140,6 +181,8 @@ public:
         action_load_layout_->setText(QCoreApplication::translate("XeroDashWindowClass", "Load Layout ...", nullptr));
         action_preferences_->setText(QCoreApplication::translate("XeroDashWindowClass", "Preferences ...", nullptr));
         action_help_about_->setText(QCoreApplication::translate("XeroDashWindowClass", "About", nullptr));
+        label->setText(QCoreApplication::translate("XeroDashWindowClass", "Data Sets", nullptr));
+        label_2->setText(QCoreApplication::translate("XeroDashWindowClass", "Values", nullptr));
         graphs_->setTabText(graphs_->indexOf(tab), QCoreApplication::translate("XeroDashWindowClass", "Tab 1", nullptr));
         graphs_->setTabText(graphs_->indexOf(tab_2), QCoreApplication::translate("XeroDashWindowClass", "Tab 2", nullptr));
         menuView->setTitle(QCoreApplication::translate("XeroDashWindowClass", "View", nullptr));
