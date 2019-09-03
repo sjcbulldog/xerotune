@@ -24,6 +24,7 @@ private:
 private:
 	void timerProc();
 	void updatePlot(std::shared_ptr<PlotDescriptor> desc);
+	void newTab();
 
 private:
 	static constexpr const char* GeometrySettings = "geometry";
@@ -37,6 +38,7 @@ private:
 	PlotManager* plot_mgr_;
 	QSettings settings_;
 	std::mutex lock_;
+	int count_;
 
 	std::list<std::shared_ptr<PlotDescriptor>> update_list_;
 };

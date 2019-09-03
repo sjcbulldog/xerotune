@@ -102,15 +102,17 @@ void PlotManager::tick()
 
 void PlotManager::itemChanged(QListWidgetItem* item)
 {
-	nodes_.clear();
-	current_ = monitor_.itemToDesc(item);
+	auto desc = monitor_.itemToDesc(item);
 
-	if (current_ != nullptr && current_->hasColumns())
+	if (desc != current_ && desc != nullptr && desc->hasColumns())
 	{
-		for (const std::string& col : current_->columns())
+		nodes_.clear();
+		for (const std::string& col : desc->columns())
 		{
 			QListWidgetItem* item = new QListWidgetItem(col.c_str());
 			nodes_.addItem(item);
 		}
+
+		current_ = desc;
 	}
 }

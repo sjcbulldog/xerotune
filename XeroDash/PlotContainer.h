@@ -14,6 +14,8 @@ public:
 	PlotContainer(PlotManager& mgr, QWidget *parent = Q_NULLPTR);
 	~PlotContainer();
 
+	void childFocused(SingleChart*);
+
 protected:
 	virtual void keyPressEvent(QKeyEvent* ev) override;
 	virtual void paintEvent(QPaintEvent* ev) override;

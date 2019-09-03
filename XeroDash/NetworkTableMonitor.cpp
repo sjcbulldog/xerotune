@@ -122,6 +122,14 @@ void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
 		if (notify.value->IsDoubleArray())
 		{
 			auto desc = findPlot(parent);
+			if (desc == nullptr)
+			{
+				QListWidgetItem* item = new QListWidgetItem(parent);
+				desc = std::make_shared<PlotDescriptor>(item);
+				new_plots_.push_back(desc);
+				all_plots_.push_back(desc);
+			}
+
 			auto& ndata = notify.value->GetDoubleArray();
 			desc->addData(index, ndata);
 		}

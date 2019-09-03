@@ -5,6 +5,7 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 {
 	monitor_.setIPAddress("127.0.0.1");
 	monitor_.start("/XeroPlot/");
+	count_ = 1;
 
 	ui.setupUi(this);
 	plot_mgr_ = new PlotManager(monitor_, *ui.plots_, *ui.nodes_);
@@ -31,6 +32,13 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	(void)connect(timer_, &QTimer::timeout, this, &XeroDashWindow::timerProc);
 
 	timer_->start(timerTickMS);
+
+	//
+	// Menuss
+	//
+	(void)connect(ui.action_new_tab_, &QAction::triggered, this, &XeroDashWindow::newTab);
+
+
 }
 
 void XeroDashWindow::closeEvent(QCloseEvent* event)
@@ -50,8 +58,15 @@ void XeroDashWindow::updatePlot(std::shared_ptr<PlotDescriptor> desc)
 	update_list_.push_back(desc);
 }
 
-
 void XeroDashWindow::timerProc()
 {
 	plot_mgr_->tick();
+}
+
+void XeroDashWindow::newTab()
+{
+	count_++;
+
+	QString title = "Plots (" + QString::number(count_) + ")" ;
+	ui.graphs_->addTab(new PlotContainer(*plot_mgr_), title);
 }

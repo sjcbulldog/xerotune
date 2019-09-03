@@ -10,10 +10,12 @@
 #define UI_XERODASHWINDOW_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QStatusBar>
@@ -26,6 +28,7 @@ QT_BEGIN_NAMESPACE
 class Ui_XeroDashWindowClass
 {
 public:
+    QAction *action_new_tab_;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout;
     QSplitter *splitter_;
@@ -35,6 +38,7 @@ public:
     QWidget *tab;
     QWidget *tab_2;
     QMenuBar *menuBar;
+    QMenu *menuView;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -43,6 +47,8 @@ public:
         if (XeroDashWindowClass->objectName().isEmpty())
             XeroDashWindowClass->setObjectName(QString::fromUtf8("XeroDashWindowClass"));
         XeroDashWindowClass->resize(1092, 760);
+        action_new_tab_ = new QAction(XeroDashWindowClass);
+        action_new_tab_->setObjectName(QString::fromUtf8("action_new_tab_"));
         centralWidget = new QWidget(XeroDashWindowClass);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         horizontalLayout = new QHBoxLayout(centralWidget);
@@ -74,6 +80,8 @@ public:
         menuBar = new QMenuBar(XeroDashWindowClass);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
         menuBar->setGeometry(QRect(0, 0, 1092, 18));
+        menuView = new QMenu(menuBar);
+        menuView->setObjectName(QString::fromUtf8("menuView"));
         XeroDashWindowClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(XeroDashWindowClass);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
@@ -81,6 +89,9 @@ public:
         statusBar = new QStatusBar(XeroDashWindowClass);
         statusBar->setObjectName(QString::fromUtf8("statusBar"));
         XeroDashWindowClass->setStatusBar(statusBar);
+
+        menuBar->addAction(menuView->menuAction());
+        menuView->addAction(action_new_tab_);
 
         retranslateUi(XeroDashWindowClass);
 
@@ -93,8 +104,10 @@ public:
     void retranslateUi(QMainWindow *XeroDashWindowClass)
     {
         XeroDashWindowClass->setWindowTitle(QCoreApplication::translate("XeroDashWindowClass", "XeroDashWindow", nullptr));
+        action_new_tab_->setText(QCoreApplication::translate("XeroDashWindowClass", "New Tab", nullptr));
         graphs_->setTabText(graphs_->indexOf(tab), QCoreApplication::translate("XeroDashWindowClass", "Tab 1", nullptr));
         graphs_->setTabText(graphs_->indexOf(tab_2), QCoreApplication::translate("XeroDashWindowClass", "Tab 2", nullptr));
+        menuView->setTitle(QCoreApplication::translate("XeroDashWindowClass", "View", nullptr));
     } // retranslateUi
 
 };

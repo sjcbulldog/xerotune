@@ -54,4 +54,5 @@ void PlotDescriptor::addData(int index, const std::vector<double>& data)
 		index_++;
 
 	data_.push_back(data);
+	emitDataAdded();
 }
