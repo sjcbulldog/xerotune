@@ -22,6 +22,8 @@ public:
 		return current_;
 	}
 
+	std::shared_ptr<PlotDescriptor> find(QString name);
+
 private:
 	std::shared_ptr<PlotDescriptor> getUpdatedPlotDesc();
 	void update(std::shared_ptr<PlotDescriptor> desc);

@@ -7,6 +7,7 @@
 #include <QValueAxis>
 #include <QLineSeries>
 #include <QString>
+#include <QJsonObject>
 #include <string>
 #include <map>
 
@@ -19,6 +20,21 @@ public:
 	~SingleChart();
 
 	void setUnits(QString units);
+	QString units() const {
+		return units_;
+	}
+
+	void setTitle(QString title) {
+		title_ = title;
+	}
+
+	QString title() const {
+		return title_;
+	}
+
+	QJsonObject createJSONDescriptor();
+
+	bool init(QJsonObject obj);
 
 protected:
 	virtual void dragEnterEvent(QDragEnterEvent* event) override;
@@ -30,6 +46,7 @@ protected:
 
 private:
 	void insertNode(QString node);
+	void insertNode(QString ds, QString node);
 	QtCharts::QValueAxis* findAxis(QString axisname);
 	QtCharts::QLineSeries* findSeries(QString node);
 	QString nodeToAxis(QString node);
@@ -64,7 +81,10 @@ private:
 	std::list<Callout*> callouts_;
 
 	QString units_;
+	QString title_;
 
 	int left_axis_count_;
 	int right_axis_count_;
+
+	std::list<std::pair<QString, QString>> pending_;
 };

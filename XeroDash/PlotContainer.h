@@ -4,6 +4,7 @@
 #include "SingleChart.h"
 #include <QWidget>
 #include <QGridLayout>
+#include <QJsonArray>
 #include <vector>
 
 class PlotContainer : public QWidget
@@ -19,6 +20,9 @@ public:
 	QString units() const {
 		return units_;
 	}
+
+	QJsonArray createJSONDescriptor();
+	bool init(QJsonArray& arr);
 
 protected:
 	virtual void keyPressEvent(QKeyEvent* ev) override;

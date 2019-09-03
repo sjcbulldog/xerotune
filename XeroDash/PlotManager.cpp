@@ -20,6 +20,11 @@ PlotManager::~PlotManager()
 
 }
 
+std::shared_ptr<PlotDescriptor> PlotManager::find(QString name)
+{
+	return monitor_.findPlot(name);
+}
+
 void PlotManager::update(std::shared_ptr<PlotDescriptor> desc)
 {
 	std::lock_guard<std::mutex> guard(lock_);

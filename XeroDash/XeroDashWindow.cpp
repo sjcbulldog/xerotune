@@ -2,6 +2,11 @@
 #include "PlotContainer.h"
 #include "PropertyEditor.h"
 #include <QLineEdit>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QMessageBox>
+#include <QFileDialog>
 
 XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -60,6 +65,10 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	//
 	(void)connect(ui.action_new_tab_, &QAction::triggered, this, &XeroDashWindow::newTab);
 	(void)connect(ui.action_preferences_, &QAction::triggered, this, &XeroDashWindow::editPreferences);
+	(void)connect(ui.action_exit_, &QAction::triggered, this, &XeroDashWindow::fileExit);
+	(void)connect(ui.action_help_about_, &QAction::triggered, this, &XeroDashWindow::helpAbout);
+	(void)connect(ui.action_load_layout_, &QAction::triggered, this, &XeroDashWindow::fileLoadLayout);
+	(void)connect(ui.action_save_layout, &QAction::triggered, this, &XeroDashWindow::fileSaveLayout);
 
 }
 
@@ -89,12 +98,20 @@ void XeroDashWindow::newTab()
 {
 	count_++;
 
-	QString title = "Plots (" + QString::number(count_) + ")" ;
+	QString title = "Plots (" + QString::number(count_) + ")";
+	newTabWithName(title);
+}
+
+PlotContainer* XeroDashWindow::newTabWithName(QString title)
+{
 	PlotContainer* cnt = new PlotContainer(*plot_mgr_);
 	cnt->setUnits(units_);
 	int index = ui.graphs_->addTab(cnt, title);
 	QWidget* widget = ui.graphs_->widget(index);
-	widget->setProperty(ContainerPropName, QVariant(0, cnt));
+	widget->setProperty(ContainerPropName, QVariant(count_));
+	containers_[count_] = cnt;
+
+	return cnt;
 }
 
 void XeroDashWindow::editPreferences()
@@ -157,11 +174,16 @@ void XeroDashWindow::closeTab(int which)
 {
 	QWidget* widget = ui.graphs_->widget(which);
 	QVariant v = widget->property(ContainerPropName);
-	void* ptr = static_cast<void*>(v.value<void*>());
-	PlotContainer* cnt = static_cast<PlotContainer*>(ptr);
+	int tag = v.toInt();
 	ui.graphs_->removeTab(which);
 
-	delete cnt;
+	auto it = containers_.find(tag);
+	if (it != containers_.end())
+	{
+		PlotContainer* cnt = containers_[tag];
+		delete cnt;
+		containers_.erase(it);
+	}
 }
 
 void XeroDashWindow::editTab(int which)
@@ -184,7 +206,6 @@ void XeroDashWindow::editTab(int which)
 	editor_->selectAll();
 	editor_->setVisible(true);
 	editor_->setText(bar->tabText(which));
-
 }
 
 void XeroDashWindow::editTabDone()
@@ -199,4 +220,141 @@ void XeroDashWindow::editTabDone()
 void XeroDashWindow::editTabAborted()
 {
 	editor_->setVisible(false);
+}
+
+int XeroDashWindow::findIndexByTag(int tag)
+{
+	for (int i = 0; i < ui.graphs_->count(); i++)
+	{
+		QVariant v = ui.graphs_->widget(i)->property(ContainerPropName);
+		if (v.toInt() == tag)
+			return i;
+	}
+
+	return -1;
+}
+
+QJsonDocument XeroDashWindow::createDocument()
+{
+	QJsonDocument doc;
+	QJsonArray arr;
+
+	for(auto pair : containers_)
+	{
+		PlotContainer* cnt = pair.second;
+		QJsonArray plots = cnt->createJSONDescriptor();
+		QJsonObject obj;
+
+		int index = findIndexByTag(pair.first);
+		obj["name"] = ui.graphs_->tabText(index);
+		obj["plots"] = plots;
+		arr.append(obj);
+	}
+
+	doc.setArray(arr);
+
+	return doc;
+}
+void XeroDashWindow::fileExit()
+{
+
+}
+
+void XeroDashWindow::helpAbout()
+{
+
+}
+
+void XeroDashWindow::fileLoadLayout()
+{
+	QString filename = QFileDialog::getOpenFileName(this, tr("Load Layout File"), "", tr("Layout File (*.layout);;All Files (*)"));
+	if (filename.length() == 0)
+		return;
+
+	QFileInfo info(filename);
+	if (!info.exists())
+	{
+		std::string msg = "File'";
+		msg += filename.toStdString();
+		msg += "' does not exist";
+		QMessageBox box(QMessageBox::Icon::Critical,
+			"Error", msg.c_str(), QMessageBox::StandardButton::Ok);
+		box.exec();
+		return;
+	}
+
+	QFile file(filename);
+	QString text;
+
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		std::string msg = "File'";
+		msg += filename.toStdString();
+		msg += "' - cannot open for reading";
+		QMessageBox box(QMessageBox::Icon::Critical,
+			"Error", msg.c_str(), QMessageBox::StandardButton::Ok);
+		box.exec();
+		return;
+	}
+
+	text = file.readAll();
+	QJsonParseError err;
+	QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8(), &err);
+	if (doc.isNull())
+	{
+		std::string msg = "File'";
+		msg += filename.toStdString();
+		msg += "' - is not a valid layout file";
+		QMessageBox box(QMessageBox::Icon::Critical,
+			"Error", msg.c_str(), QMessageBox::StandardButton::Ok);
+		box.exec();
+		return;
+	}
+
+	if (!doc.isArray())
+	{
+		std::string msg = "File'";
+		msg += filename.toStdString();
+		msg += "' - is not a valid layout file";
+		QMessageBox box(QMessageBox::Icon::Critical,
+			"Error", msg.c_str(), QMessageBox::StandardButton::Ok);
+		box.exec();
+		return ;
+	}
+
+	while (ui.graphs_->count() > 0)
+		closeTab(0);
+
+	QJsonArray arr = doc.array();
+	for (QJsonValue v : arr)
+	{
+		if (v.isObject())
+		{
+			QJsonObject contobj = v.toObject();
+			QString title = contobj["name"].toString();
+			PlotContainer *cnt = newTabWithName(title);
+
+			QJsonValue varr = contobj["plots"];
+			if (varr.isArray())
+				cnt->init(varr.toArray());
+		}
+	}
+}
+
+void XeroDashWindow::fileSaveLayout()
+{
+	QFileDialog dialog;
+
+	QJsonDocument doc = createDocument();
+
+	QString filename = QFileDialog::getSaveFileName(this, tr("Layout File"), "", tr("Layout File (*.layout);;All Files (*)"));
+	if (filename.length() == 0)
+		return;
+
+	QFile file(filename);
+	if (!file.open(QIODevice::OpenModeFlag::Truncate | QIODevice::OpenModeFlag::WriteOnly))
+		return ;
+
+	file.write(doc.toJson());
+	file.close();
 }

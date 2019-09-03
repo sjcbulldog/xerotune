@@ -1,4 +1,5 @@
 #include "PlotContainer.h"
+#include <QJsonObject>
 
 PlotContainer::PlotContainer(PlotManager& mgr, QWidget *parent) : QWidget(parent), plot_mgr_(mgr)
 {
@@ -19,6 +20,50 @@ PlotContainer::PlotContainer(PlotManager& mgr, QWidget *parent) : QWidget(parent
 
 PlotContainer::~PlotContainer()
 {
+}
+
+QJsonArray PlotContainer::createJSONDescriptor()
+{
+	QJsonArray arr;
+
+	for (int i = 0; i < charts_.size(); i++)
+	{
+		QJsonObject obj = charts_[i]->createJSONDescriptor();
+		arr.append(obj);
+	}
+
+	return arr;
+}
+
+bool PlotContainer::init(QJsonArray& arr)
+{
+	bool ret = true;
+
+	while (charts_.size() > 0)
+	{
+		SingleChart* ch = charts_.back();
+		charts_.pop_back();
+
+		layout_->removeWidget(ch);
+		delete ch;
+	}
+
+	for (QJsonValue v : arr)
+	{
+		if (v.isObject())
+		{
+			QJsonObject chobj = v.toObject();
+			SingleChart* ch = new SingleChart(units_, plot_mgr_, this);
+			charts_.push_back(ch);
+			layout_->addWidget(ch);
+			if (!ch->init(chobj))
+				ret = false;
+		}
+	}
+
+	arrangeCharts();
+
+	return ret;
 }
 
 void PlotContainer::setUnits(QString units)
@@ -45,7 +90,7 @@ void PlotContainer::keyPressEvent(QKeyEvent *ev)
 
 		SingleChart* ch = new SingleChart(units_, plot_mgr_, this);
 		charts_.push_back(ch);
-		layout_->addWidget(ch, 0, 0);
+		layout_->addWidget(ch);
 		arrangeCharts();
 	}
 	else if (ev->key() == Qt::Key::Key_Delete)
@@ -53,6 +98,7 @@ void PlotContainer::keyPressEvent(QKeyEvent *ev)
 		auto it = std::find(charts_.begin(), charts_.end(), selected_);
 		if (it != charts_.end())
 		{
+			layout_->removeWidget(selected_);
 			charts_.erase(it);
 			delete selected_;
 			selected_ = nullptr;

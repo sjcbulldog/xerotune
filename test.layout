@@ -1,0 +1,43 @@
+[
+    {
+        "name": "TabOne",
+        "plots": [
+            {
+                "nodes": [
+                    {
+                        "dataset": "TankDriveCharAction",
+                        "variable": "dist"
+                    }
+                ],
+                "title": "TankDriveCharAction"
+            },
+            {
+                "nodes": [
+                    {
+                        "dataset": "TankDriveCharAction",
+                        "variable": "velocity"
+                    }
+                ],
+                "title": "TankDriveCharAction"
+            }
+        ]
+    },
+    {
+        "name": "TabTwo",
+        "plots": [
+            {
+                "nodes": [
+                    {
+                        "dataset": "TankDriveCharAction",
+                        "variable": "dist"
+                    },
+                    {
+                        "dataset": "TankDriveCharAction",
+                        "variable": "velocity"
+                    }
+                ],
+                "title": "TankDriveCharAction"
+            }
+        ]
+    }
+]

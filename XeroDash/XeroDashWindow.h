@@ -30,11 +30,19 @@ private:
 	void timerProc();
 	void updatePlot(std::shared_ptr<PlotDescriptor> desc);
 	void newTab();
+	PlotContainer *newTabWithName(QString title);
 	void editPreferences();
 	void closeTab(int which);
 	void editTab(int which);
 	void editTabDone();
 	void editTabAborted();
+	void fileExit();
+	void helpAbout();
+	void fileLoadLayout();
+	void fileSaveLayout();
+
+	QJsonDocument createDocument();
+	int findIndexByTag(int tag);
 
 private:
 	static constexpr const char* GeometrySettings = "geometry";
@@ -62,4 +70,5 @@ private:
 	int which_tab_;
 
 	std::list<std::shared_ptr<PlotDescriptor>> update_list_;
+	std::map<int, PlotContainer *> containers_;
 };

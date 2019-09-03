@@ -35,6 +35,7 @@ public:
     QAction *action_load_layout_;
     QAction *action_preferences_;
     QAction *action_help_about_;
+    QAction *action_exit_;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout;
     QSplitter *splitter_;
@@ -52,7 +53,6 @@ public:
     QMenuBar *menuBar;
     QMenu *menuView;
     QMenu *menuFile;
-    QMenu *action_exit_;
     QMenu *menuHelp;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -72,6 +72,8 @@ public:
         action_preferences_->setObjectName(QString::fromUtf8("action_preferences_"));
         action_help_about_ = new QAction(XeroDashWindowClass);
         action_help_about_->setObjectName(QString::fromUtf8("action_help_about_"));
+        action_exit_ = new QAction(XeroDashWindowClass);
+        action_exit_->setObjectName(QString::fromUtf8("action_exit_"));
         centralWidget = new QWidget(XeroDashWindowClass);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         horizontalLayout = new QHBoxLayout(centralWidget);
@@ -140,8 +142,6 @@ public:
         menuView->setObjectName(QString::fromUtf8("menuView"));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QString::fromUtf8("menuFile"));
-        action_exit_ = new QMenu(menuFile);
-        action_exit_->setObjectName(QString::fromUtf8("action_exit_"));
         menuHelp = new QMenu(menuBar);
         menuHelp->setObjectName(QString::fromUtf8("menuHelp"));
         XeroDashWindowClass->setMenuBar(menuBar);
@@ -161,8 +161,7 @@ public:
         menuFile->addSeparator();
         menuFile->addAction(action_preferences_);
         menuFile->addSeparator();
-        menuFile->addAction(action_exit_->menuAction());
-        action_exit_->addSeparator();
+        menuFile->addAction(action_exit_);
         menuHelp->addAction(action_help_about_);
 
         retranslateUi(XeroDashWindowClass);
@@ -181,13 +180,13 @@ public:
         action_load_layout_->setText(QCoreApplication::translate("XeroDashWindowClass", "Load Layout ...", nullptr));
         action_preferences_->setText(QCoreApplication::translate("XeroDashWindowClass", "Preferences ...", nullptr));
         action_help_about_->setText(QCoreApplication::translate("XeroDashWindowClass", "About", nullptr));
+        action_exit_->setText(QCoreApplication::translate("XeroDashWindowClass", "Exit", nullptr));
         label->setText(QCoreApplication::translate("XeroDashWindowClass", "Data Sets", nullptr));
         label_2->setText(QCoreApplication::translate("XeroDashWindowClass", "Values", nullptr));
         graphs_->setTabText(graphs_->indexOf(tab), QCoreApplication::translate("XeroDashWindowClass", "Tab 1", nullptr));
         graphs_->setTabText(graphs_->indexOf(tab_2), QCoreApplication::translate("XeroDashWindowClass", "Tab 2", nullptr));
         menuView->setTitle(QCoreApplication::translate("XeroDashWindowClass", "View", nullptr));
         menuFile->setTitle(QCoreApplication::translate("XeroDashWindowClass", "File", nullptr));
-        action_exit_->setTitle(QCoreApplication::translate("XeroDashWindowClass", "Exit", nullptr));
         menuHelp->setTitle(QCoreApplication::translate("XeroDashWindowClass", "Help", nullptr));
     } // retranslateUi
 

@@ -3,6 +3,7 @@
 #include <QMimeData>
 #include <QListWidget>
 #include <QDebug>
+#include <QMessageBox>
 
 using namespace QtCharts;
 
@@ -34,6 +35,49 @@ SingleChart::SingleChart(QString units, PlotManager &mgr, QWidget *parent) : QCh
 
 SingleChart::~SingleChart()
 {
+}
+
+QJsonObject SingleChart::createJSONDescriptor()
+{
+	QJsonObject obj;
+	QJsonArray arr;
+
+	obj["title"] = title_;
+	for (QString name : node_names_)
+	{
+		QJsonObject nodeobj;
+
+		nodeobj["dataset"] = desc_->name();
+		nodeobj["variable"] = name;
+
+		arr.append(nodeobj);
+	}
+	obj["nodes"] = arr;
+	return obj;
+}
+
+bool SingleChart::init(QJsonObject obj)
+{
+	if (obj.contains("title") && obj["title"].isString())
+		setTitle(obj["title"].toString());
+
+	if (obj.contains("nodes") && obj["nodes"].isArray())
+	{
+		QJsonArray arr = obj["nodes"].toArray();
+		for (QJsonValue v : arr)
+		{
+			if (v.isObject())
+			{
+				QJsonObject node = v.toObject();
+				QString ds = node["dataset"].toString();
+				QString var = node["variable"].toString();
+
+				insertNode(ds, var);
+			}
+		}
+	}
+
+	return true;
 }
 
 void SingleChart::setUnits(QString units)
@@ -247,25 +291,65 @@ void SingleChart::createLegend()
 void SingleChart::insertNode(QString node)
 {
 	std::shared_ptr<PlotDescriptor> desc = plot_mgr_.current();
+	insertNode(desc->name(), node);
+}
+
+void SingleChart::insertNode(QString ds, QString node)
+{
+	std::shared_ptr<PlotDescriptor> desc = plot_mgr_.find(ds);
+	if (desc == nullptr)
+	{
+		pending_.push_back(std::make_pair(ds, node));
+		return;
+	}
 
 	if (desc_ == nullptr)
 	{
 		desc_ = desc;
 		(void)connect(desc_.get(), &PlotDescriptor::dataAdded, this, &SingleChart::dataAdded);
 		(void)connect(desc_.get(), &PlotDescriptor::activeChanged, this, &SingleChart::activeChanged);
+
+		title_ = desc_->name();
 	}
 	else
 	{
 		if (desc != desc_)
+		{
+			QString msg = "Could not add variable '";
+			msg += node;
+			msg += "' to the graph - it is from a different data set from other variales in this graph";
+			QMessageBox box(QMessageBox::Icon::Critical,
+				"Error", msg, QMessageBox::StandardButton::Ok);
+			box.exec();
 			return;
+		}
 	}
 
 	if (!desc_->hasColumns())
 		return;
 
 	size_t colidx = desc_->getColumnIndexFromName(node.toStdString());
-	if (colidx == std::numeric_limits<size_t>::max() || colidx == 0)
+	if (colidx == std::numeric_limits<size_t>::max())
+	{
+		QString msg = "Could not add variable '";
+		msg += node;
+		msg += "' to the graph";
+		QMessageBox box(QMessageBox::Icon::Critical,
+			"Error", msg, QMessageBox::StandardButton::Ok);
+		box.exec();
 		return;
+	}
+
+	if (colidx == 0)
+	{
+		QString msg = "Could not add variable '";
+		msg += node;
+		msg += "' to the graph - it is the independent variable";
+		QMessageBox box(QMessageBox::Icon::Critical,
+			"Error", msg, QMessageBox::StandardButton::Ok);
+		box.exec();
+		return;
+	}
 
 	if (time_ == nullptr)
 		createTimeAxis();
@@ -345,9 +429,24 @@ void SingleChart::insertNode(QString node)
 
 		axis->applyNiceNumbers();
 		time_->applyNiceNumbers();
-	}
 
-	dataAdded();
+		dataAdded();
+
+		QFont font = chart()->titleFont();
+		font.setPointSize(20);
+		font.setBold(true);
+		chart()->setTitleFont(font);
+		chart()->setTitle(title_);
+	}
+	else
+	{
+		QString msg = "Could not add variable '";
+		msg += node;
+		msg += "' to the graph - it is already in the graph";
+		QMessageBox box(QMessageBox::Icon::Critical,
+			"Error", msg, QMessageBox::StandardButton::Ok);
+		box.exec();
+	}
 }
 
 void SingleChart::activeChanged()

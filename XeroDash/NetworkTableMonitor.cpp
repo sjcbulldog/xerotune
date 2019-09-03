@@ -92,6 +92,8 @@ void NetworkTableMonitor::instCallback(const nt::EntryNotification &notify)
 
 std::shared_ptr<PlotDescriptor> NetworkTableMonitor::findPlot(QString name)
 {
+	std::lock_guard guard(thread_lock_);
+
 	auto it = std::find_if(all_plots_.begin(), all_plots_.end(), [name](std::shared_ptr<PlotDescriptor> d) { return d->name() == name; });
 	if (it == all_plots_.end())
 		return nullptr;
