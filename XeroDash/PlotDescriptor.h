@@ -41,29 +41,7 @@ public:
 		return active_;
 	}
 
-	void setActive(bool b) {
-
-		if (!active_ && b)
-		{
-			//
-			// We are transitioning from not active to active, clear data and reset index counter
-			//
-			data_.clear();
-			index_ = 0;
-			total_lost_ = 0;
-		}
-		else if (active_ && !b)
-		{
-			//
-			// We are transitioning from active to not active, we are done with data for this round
-			//
-			if (percentCaptured() < 90.0)
-				item_->setBackgroundColor(QColor(0xff, 0xc0, 0xc0, 0xFF));
-		}
-
-		active_ = b;
-		emitActiveChanged();
-	}
+	void setActive(bool b);
 
 	bool dataDirty() const {
 		return data_dirty_;
@@ -108,6 +86,14 @@ public:
 
 	double data(size_t row, size_t col) {
 		return (data_[row])[col];
+	}
+
+	int getIndex() const {
+		return index_;
+	}
+
+	int totalSamples() const {
+		return data_.size() + total_lost_;
 	}
 
 signals:

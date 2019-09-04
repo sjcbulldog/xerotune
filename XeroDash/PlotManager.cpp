@@ -1,4 +1,5 @@
 #include "PlotManager.h"
+#include <QDebug>
 
 PlotManager::PlotManager(NetworkTableMonitor& monitor, QListWidget& plots, QListWidget &nodes) 
 				: monitor_(monitor), plots_(plots), nodes_(nodes)
@@ -63,6 +64,8 @@ void PlotManager::tick()
 		if (desc == nullptr)
 			break;
 
+		qDebug() << "Pulled new plot descriptor - " << desc->name();
+
 		QListWidgetItem* item = desc->item();
 		QString txt = item->text();
 		item->setFlags(Qt::NoItemFlags);
@@ -71,6 +74,9 @@ void PlotManager::tick()
 		(void)connect(desc.get(), &PlotDescriptor::activeChanged, this, [desc, this]() { this->update(desc); });
 		(void)connect(desc.get(), &PlotDescriptor::initedChanged, this, [desc, this]() { this->update(desc); });
 		(void)connect(desc.get(), &PlotDescriptor::dataAdded, this, [desc, this]() { this->update(desc); });
+
+		if (desc->inited())
+			update(desc);
 	}
 
 	//
@@ -103,9 +109,6 @@ void PlotManager::tick()
 				plots_.repaint();
 			}
 
-			if (desc->dataDirty())
-			{
-			}
 		}
 		else
 		{

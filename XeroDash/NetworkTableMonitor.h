@@ -2,6 +2,7 @@
 
 #include "PlotDescriptor.h"
 #include <networktables/NetworkTableInstance.h>
+#include <networktables/NetworkTable.h>
 #include <thread>
 #include <mutex>
 #include <string>
@@ -37,6 +38,8 @@ private:
 
 	void addDataToPlot();
 
+	void getEarlierData(QString loc, std::shared_ptr<PlotDescriptor> desc, int index);
+
 private:
 	std::string table_name_;
 	std::mutex thread_lock_;
@@ -48,6 +51,7 @@ private:
 	nt::NetworkTableInstance inst_;
 	std::list<std::shared_ptr<PlotDescriptor>> all_plots_;
 	std::list<std::shared_ptr<PlotDescriptor>> new_plots_;
+	NT_EntryListener listener_;
 
 	static NetworkTableMonitor* theOne;
 };

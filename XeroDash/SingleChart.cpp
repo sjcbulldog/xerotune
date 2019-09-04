@@ -315,7 +315,8 @@ void SingleChart::insertNode(QString ds, QString node)
 		(void)connect(desc_.get(), &PlotDescriptor::dataAdded, this, &SingleChart::dataAdded);
 		(void)connect(desc_.get(), &PlotDescriptor::activeChanged, this, &SingleChart::activeChanged);
 
-		title_ = desc_->name();
+		if (title_.length() == 0)
+			title_ = desc_->name();
 	}
 	else
 	{
@@ -466,6 +467,10 @@ void SingleChart::activeChanged()
 			QLineSeries* line = dynamic_cast<QLineSeries*>(series);
 			line->clear();
 		}
+
+		tminv_ = std::numeric_limits<double>::max();
+		tmaxv_ = std::numeric_limits<double>::min();
+		min_max_.clear();
 	}
 	else
 	{
@@ -519,9 +524,10 @@ void SingleChart::dataAdded()
 
 			QString axisname = nodeToAxis(line->name());
 
-			time_->setRange(tminv_, tmaxv_);
 			setMinMax(axisname.toStdString(), minv, maxv);
 			getMinMax(axisname.toStdString(), minv, maxv);
+
+			time_->setRange(tminv_, tmaxv_);
 
 			QValueAxis* axis = findAxis(axisname);
 				axis->setRange(minv, maxv);
