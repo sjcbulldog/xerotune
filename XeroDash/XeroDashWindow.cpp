@@ -1,6 +1,7 @@
 #include "XeroDashWindow.h"
 #include "PlotContainer.h"
 #include "PropertyEditor.h"
+#include "AboutDialog.h"
 #include <QLineEdit>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -269,12 +270,13 @@ QJsonDocument XeroDashWindow::createDocument()
 }
 void XeroDashWindow::fileExit()
 {
-
+	close();
 }
 
 void XeroDashWindow::helpAbout()
 {
-
+	AboutDialog about;
+	about.exec();
 }
 
 void XeroDashWindow::fileLoadLayout()

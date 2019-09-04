@@ -15,6 +15,11 @@ public:
 	PlotDescriptor(QListWidgetItem* item);
 	virtual ~PlotDescriptor();
 
+	double percentCaptured() {
+		double result =  static_cast<double>(data_.size()) / static_cast<double>(data_.size() + total_lost_) * 100.0;
+		return result;
+	}
+
 	QString name() const {
 		return item_->text();
 	}
@@ -46,6 +51,14 @@ public:
 			data_.clear();
 			index_ = 0;
 			total_lost_ = 0;
+		}
+		else if (active_ && !b)
+		{
+			//
+			// We are transitioning from active to not active, we are done with data for this round
+			//
+			if (percentCaptured() < 90.0)
+				item_->setBackgroundColor(QColor(0xff, 0xc0, 0xc0, 0xFF));
 		}
 
 		active_ = b;
