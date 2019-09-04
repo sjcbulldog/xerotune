@@ -94,11 +94,13 @@ std::shared_ptr<PlotDescriptor> NetworkTableMonitor::findPlot(QString name)
 {
 	std::lock_guard guard(thread_lock_);
 
-	auto it = std::find_if(all_plots_.begin(), all_plots_.end(), [name](std::shared_ptr<PlotDescriptor> d) { return d->name() == name; });
-	if (it == all_plots_.end())
-		return nullptr;
+	for (auto desc : all_plots_)
+	{
+		if (desc->name() == name)
+			return desc;
+	}
 
-	return *it;
+	return nullptr;
 }
 
 void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
@@ -158,7 +160,8 @@ void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
 		if (notify.value->IsBoolean())
 		{
 			auto desc = findPlot(plotname);
-			desc->setActive(notify.value->GetBoolean());
+			if (desc != nullptr)
+				desc->setActive(notify.value->GetBoolean());
 		}
 	}
 	else if (keyword == "columns")
@@ -166,11 +169,13 @@ void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
 		if (notify.value->IsStringArray())
 		{
 			auto desc = findPlot(plotname);
+			if (desc)
+			{
+				desc->clearColumns();
 
-			desc->clearColumns();
-
-			for (auto& str : notify.value->GetStringArray())
-				desc->addColumn(str);
+				for (auto& str : notify.value->GetStringArray())
+					desc->addColumn(str);
+			}
 		}
 	}
 	else
@@ -291,7 +296,7 @@ std::shared_ptr<PlotDescriptor> NetworkTableMonitor::getPlotDesc()
 
 void NetworkTableMonitor::monitorThread()
 {
-	std::chrono::milliseconds delay(100);
+	std::chrono::milliseconds delay(1000);
 	int flags;
 
 	inst_ = nt::NetworkTableInstance::GetDefault();

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'XeroDashWindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.13.0
+** Created by: Qt User Interface Compiler version 5.12.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -182,22 +182,22 @@ public:
 
     void retranslateUi(QMainWindow *XeroDashWindowClass)
     {
-        XeroDashWindowClass->setWindowTitle(QCoreApplication::translate("XeroDashWindowClass", "XeroDashWindow", nullptr));
-        action_new_tab_->setText(QCoreApplication::translate("XeroDashWindowClass", "New Tab", nullptr));
-        action_save_layout->setText(QCoreApplication::translate("XeroDashWindowClass", "Save Layout ...", nullptr));
-        action_load_layout_->setText(QCoreApplication::translate("XeroDashWindowClass", "Load Layout ...", nullptr));
-        action_preferences_->setText(QCoreApplication::translate("XeroDashWindowClass", "Preferences ...", nullptr));
-        action_help_about_->setText(QCoreApplication::translate("XeroDashWindowClass", "About", nullptr));
-        action_exit_->setText(QCoreApplication::translate("XeroDashWindowClass", "Exit", nullptr));
-        action_graph_title_->setText(QCoreApplication::translate("XeroDashWindowClass", "Graph Title ...", nullptr));
-        label->setText(QCoreApplication::translate("XeroDashWindowClass", "Data Sets", nullptr));
-        label_2->setText(QCoreApplication::translate("XeroDashWindowClass", "Values", nullptr));
-        graphs_->setTabText(graphs_->indexOf(tab), QCoreApplication::translate("XeroDashWindowClass", "Tab 1", nullptr));
-        graphs_->setTabText(graphs_->indexOf(tab_2), QCoreApplication::translate("XeroDashWindowClass", "Tab 2", nullptr));
-        menuView->setTitle(QCoreApplication::translate("XeroDashWindowClass", "View", nullptr));
-        menuFile->setTitle(QCoreApplication::translate("XeroDashWindowClass", "File", nullptr));
-        menuHelp->setTitle(QCoreApplication::translate("XeroDashWindowClass", "Help", nullptr));
-        menuEdit->setTitle(QCoreApplication::translate("XeroDashWindowClass", "Edit", nullptr));
+        XeroDashWindowClass->setWindowTitle(QApplication::translate("XeroDashWindowClass", "XeroDashWindow", nullptr));
+        action_new_tab_->setText(QApplication::translate("XeroDashWindowClass", "New Tab", nullptr));
+        action_save_layout->setText(QApplication::translate("XeroDashWindowClass", "Save Layout ...", nullptr));
+        action_load_layout_->setText(QApplication::translate("XeroDashWindowClass", "Load Layout ...", nullptr));
+        action_preferences_->setText(QApplication::translate("XeroDashWindowClass", "Preferences ...", nullptr));
+        action_help_about_->setText(QApplication::translate("XeroDashWindowClass", "About", nullptr));
+        action_exit_->setText(QApplication::translate("XeroDashWindowClass", "Exit", nullptr));
+        action_graph_title_->setText(QApplication::translate("XeroDashWindowClass", "Graph Title ...", nullptr));
+        label->setText(QApplication::translate("XeroDashWindowClass", "Data Sets", nullptr));
+        label_2->setText(QApplication::translate("XeroDashWindowClass", "Values", nullptr));
+        graphs_->setTabText(graphs_->indexOf(tab), QApplication::translate("XeroDashWindowClass", "Tab 1", nullptr));
+        graphs_->setTabText(graphs_->indexOf(tab_2), QApplication::translate("XeroDashWindowClass", "Tab 2", nullptr));
+        menuView->setTitle(QApplication::translate("XeroDashWindowClass", "View", nullptr));
+        menuFile->setTitle(QApplication::translate("XeroDashWindowClass", "File", nullptr));
+        menuHelp->setTitle(QApplication::translate("XeroDashWindowClass", "Help", nullptr));
+        menuEdit->setTitle(QApplication::translate("XeroDashWindowClass", "Edit", nullptr));
     } // retranslateUi
 
 };
