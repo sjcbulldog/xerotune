@@ -24,9 +24,15 @@ public:
 	QJsonArray createJSONDescriptor();
 	bool init(QJsonArray& arr);
 
+	void editTitle() {
+		if (selected_ != nullptr)
+			selected_->editTitle();
+	}
+
 protected:
 	virtual void keyPressEvent(QKeyEvent* ev) override;
 	virtual void paintEvent(QPaintEvent* ev) override;
+	virtual void mouseDoubleClickEvent(QMouseEvent* ev) override;
 
 private:
 	void arrangeCharts();
@@ -34,7 +40,7 @@ private:
 private:
 	PlotManager& plot_mgr_;
 	QGridLayout* layout_;
-	QtCharts::QChartView* selected_;
+	SingleChart* selected_;
 	std::vector<SingleChart *> charts_;
 	QString units_;
 };

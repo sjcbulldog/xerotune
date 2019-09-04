@@ -109,7 +109,14 @@
     </property>
     <addaction name="action_help_about_"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="action_graph_title_"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -150,6 +157,11 @@
   <action name="action_exit_">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="action_graph_title_">
+   <property name="text">
+    <string>Graph Title ...</string>
    </property>
   </action>
  </widget>

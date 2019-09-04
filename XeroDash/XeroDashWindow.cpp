@@ -10,7 +10,7 @@
 
 XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 {
-	count_ = 0;
+	count_ = 1;
 	editor_ = nullptr;
 
 	ui.setupUi(this);
@@ -69,7 +69,7 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	(void)connect(ui.action_help_about_, &QAction::triggered, this, &XeroDashWindow::helpAbout);
 	(void)connect(ui.action_load_layout_, &QAction::triggered, this, &XeroDashWindow::fileLoadLayout);
 	(void)connect(ui.action_save_layout, &QAction::triggered, this, &XeroDashWindow::fileSaveLayout);
-
+	(void)connect(ui.action_graph_title_, &QAction::triggered, this, &XeroDashWindow::editGraphTitle);
 }
 
 void XeroDashWindow::closeEvent(QCloseEvent* event)
@@ -96,8 +96,6 @@ void XeroDashWindow::timerProc()
 
 void XeroDashWindow::newTab()
 {
-	count_++;
-
 	QString title = "Plots (" + QString::number(count_) + ")";
 	newTabWithName(title);
 }
@@ -109,7 +107,7 @@ PlotContainer* XeroDashWindow::newTabWithName(QString title)
 	int index = ui.graphs_->addTab(cnt, title);
 	QWidget* widget = ui.graphs_->widget(index);
 	widget->setProperty(ContainerPropName, QVariant(count_));
-	containers_[count_] = cnt;
+	containers_[count_++] = cnt;
 
 	return cnt;
 }
@@ -170,6 +168,20 @@ void XeroDashWindow::editPreferences()
 	}
 }
 
+PlotContainer* XeroDashWindow::currentContainer()
+{
+	int index = ui.graphs_->currentIndex();
+	QWidget* widget = ui.graphs_->widget(index);
+	QVariant v = widget->property(ContainerPropName);
+	int tag = v.toInt();
+
+	auto it = containers_.find(tag);
+	if (it == containers_.end())
+		return nullptr;
+
+	return it->second;
+}
+
 void XeroDashWindow::closeTab(int which)
 {
 	QWidget* widget = ui.graphs_->widget(which);
@@ -203,9 +215,9 @@ void XeroDashWindow::editTab(int which)
 
 	editor_->setGeometry(r);
 	editor_->setFocus(Qt::FocusReason::OtherFocusReason);
-	editor_->selectAll();
 	editor_->setVisible(true);
 	editor_->setText(bar->tabText(which));
+	editor_->selectAll();
 }
 
 void XeroDashWindow::editTabDone()
@@ -357,4 +369,9 @@ void XeroDashWindow::fileSaveLayout()
 
 	file.write(doc.toJson());
 	file.close();
+}
+
+void XeroDashWindow::editGraphTitle()
+{
+	currentContainer()->editTitle();
 }

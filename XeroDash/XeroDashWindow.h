@@ -40,9 +40,11 @@ private:
 	void helpAbout();
 	void fileLoadLayout();
 	void fileSaveLayout();
+	void editGraphTitle();
 
 	QJsonDocument createDocument();
 	int findIndexByTag(int tag);
+	PlotContainer* currentContainer();
 
 private:
 	static constexpr const char* GeometrySettings = "geometry";

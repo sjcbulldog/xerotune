@@ -31,6 +31,8 @@ SingleChart::SingleChart(QString units, PlotManager &mgr, QWidget *parent) : QCh
 
 	left_axis_count_ = 0;
 	right_axis_count_ = 0;
+
+	editor_ = nullptr;
 }
 
 SingleChart::~SingleChart()
@@ -129,6 +131,9 @@ void SingleChart::keyPressEvent(QKeyEvent* ev)
 		chart()->zoomReset();
 		total_scroll_x_ = 0;
 		total_scroll_y_ = 0;
+		for (auto callout : callouts_)
+			delete callout;
+		callouts_.clear();
 		break;
 	default:
 		QGraphicsView::keyPressEvent(ev);
@@ -572,4 +577,50 @@ void SingleChart::datasetActive()
 
 	if (pending_.size() == 0)
 		(void)disconnect(connection_);
+}
+
+void SingleChart::editTitle()
+{
+	if (editor_ == nullptr)
+	{
+		editor_ = new TabEditName(this);
+		(void)connect(editor_, &TabEditName::returnPressed, this, &SingleChart::editorDone);
+		(void)connect(editor_, &TabEditName::escapePressed, this, &SingleChart::editorAborted);
+
+		QFont font = editor_->font();
+		font.setPointSize(20);
+		font.setBold(true);
+		editor_->setFont(font);
+
+		editor_->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+	}
+
+	QRect r(20, 28, width() - 40, 40);
+	editor_->setGeometry(r);
+	editor_->setText(title_);
+	editor_->setVisible(true);
+	editor_->setFocus();
+	editor_->selectAll();
+}
+
+void SingleChart::editorDone()
+{
+	setTitle(editor_->text());
+	editor_->setVisible(false);
+}
+
+void SingleChart::editorAborted()
+{
+	editor_->setVisible(false);
+}
+
+void SingleChart::setTitle(QString t)
+{
+	title_ = t;
+
+	QFont font = chart()->titleFont();
+	font.setPointSize(20);
+	font.setBold(true);
+	chart()->setTitleFont(font);
+	chart()->setTitle(title_);
 }

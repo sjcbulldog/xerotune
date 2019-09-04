@@ -3,6 +3,7 @@
 #include "Callout.h"
 #include "PlotDescriptor.h"
 #include "PlotManager.h"
+#include "TabEditName.h"
 #include <QChartView>
 #include <QValueAxis>
 #include <QLineSeries>
@@ -24,9 +25,7 @@ public:
 		return units_;
 	}
 
-	void setTitle(QString title) {
-		title_ = title;
-	}
+	void setTitle(QString title);
 
 	QString title() const {
 		return title_;
@@ -35,6 +34,8 @@ public:
 	QJsonObject createJSONDescriptor();
 
 	bool init(QJsonObject obj);
+
+	void editTitle();
 
 protected:
 	virtual void dragEnterEvent(QDragEnterEvent* event) override;
@@ -65,6 +66,9 @@ private:
 
 	void datasetActive();
 
+	void editorDone();
+	void editorAborted();
+
 private:
 	PlotManager& plot_mgr_;
 	std::shared_ptr<PlotDescriptor> desc_;
@@ -90,4 +94,6 @@ private:
 
 	std::list<std::pair<QString, QString>> pending_;
 	QMetaObject::Connection connection_;
+
+	TabEditName* editor_;
 };

@@ -119,6 +119,12 @@ void PlotContainer::paintEvent(QPaintEvent* ev)
 	paint.drawRect(r);
 }
 
+void PlotContainer::mouseDoubleClickEvent(QMouseEvent *ev)
+{
+	if (selected_ != nullptr)
+		selected_->editTitle();
+}
+
 void PlotContainer::arrangeCharts()
 {
 	for (auto w : charts_)
