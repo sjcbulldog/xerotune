@@ -299,6 +299,7 @@ void SingleChart::insertNode(QString ds, QString node)
 	std::shared_ptr<PlotDescriptor> desc = plot_mgr_.find(ds);
 	if (desc == nullptr)
 	{
+		connection_ = connect(&plot_mgr_, &PlotManager::datasetActive, this, &SingleChart::datasetActive);
 		pending_.push_back(std::make_pair(ds, node));
 		return;
 	}
@@ -559,4 +560,16 @@ void SingleChart::seriesClick(QLineSeries* ser, const QPointF& pt)
 
 	callouts_.push_back(callout_);
 	callout_ = nullptr;
+}
+
+void SingleChart::datasetActive()
+{
+	std::list<std::pair<QString, QString>> pending = pending_;
+	pending_.clear();
+
+	for (auto pair : pending)
+		insertNode(pair.first, pair.second);
+
+	if (pending_.size() == 0)
+		(void)disconnect(connection_);
 }

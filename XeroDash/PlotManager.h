@@ -24,7 +24,11 @@ public:
 
 	std::shared_ptr<PlotDescriptor> find(QString name);
 
+signals:
+	void datasetActive();
+
 private:
+	void emitDatasetActive();
 	std::shared_ptr<PlotDescriptor> getUpdatedPlotDesc();
 	void update(std::shared_ptr<PlotDescriptor> desc);
 	

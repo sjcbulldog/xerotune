@@ -45,6 +45,11 @@ std::shared_ptr<PlotDescriptor> PlotManager::getUpdatedPlotDesc()
 	return desc;
 }
 
+void PlotManager::emitDatasetActive()
+{
+	emit datasetActive();
+}
+
 void PlotManager::tick()
 {
 	std::shared_ptr<PlotDescriptor> desc;
@@ -88,6 +93,7 @@ void PlotManager::tick()
 
 			if (desc->active())
 			{
+				emitDatasetActive();
 				item->setForeground(QBrush(QColor(0x00, 0x00, 0xff, 0xFF)));
 				plots_.repaint();
 			}

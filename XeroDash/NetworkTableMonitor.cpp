@@ -291,7 +291,7 @@ std::shared_ptr<PlotDescriptor> NetworkTableMonitor::getPlotDesc()
 
 void NetworkTableMonitor::monitorThread()
 {
-	std::chrono::milliseconds delay(10);
+	std::chrono::milliseconds delay(100);
 	int flags;
 
 	inst_ = nt::NetworkTableInstance::GetDefault();

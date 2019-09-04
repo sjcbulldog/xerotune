@@ -63,6 +63,8 @@ private:
 	void seriesHover(QtCharts::QLineSeries* series, const QPointF& point, bool state);
 	void seriesClick(QtCharts::QLineSeries* series, const QPointF& point);
 
+	void datasetActive();
+
 private:
 	PlotManager& plot_mgr_;
 	std::shared_ptr<PlotDescriptor> desc_;
@@ -87,4 +89,5 @@ private:
 	int right_axis_count_;
 
 	std::list<std::pair<QString, QString>> pending_;
+	QMetaObject::Connection connection_;
 };
