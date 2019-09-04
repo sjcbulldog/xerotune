@@ -257,14 +257,14 @@ QLineSeries* SingleChart::findSeries(QString node)
 
 QString SingleChart::nodeToAxis(QString node)
 {
-	if (node.contains("dist"))
+	if (node.contains("dist") || node.contains("pos"))
 		return "Distance (" + units_ + ")";
-	else if (node.contains("velocity"))
+	else if (node.contains("vel"))
 		return "Velocity (" + units_ + "/s)";
-	else if (node.contains("accel"))
+	else if (node.contains("acc"))
 		return "Accel (" + units_ + "/s^2)";
 	else if (node.contains("jerk"))
-		return "Jerk (" + units_ + " / s ^ 3)";
+		return "Jerk (" + units_ + "/s^3)";
 	else if (node.contains("tick"))
 		return "Ticks (count)";
 
