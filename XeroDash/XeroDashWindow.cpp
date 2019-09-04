@@ -48,7 +48,7 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	if (settings_.contains(NTPlotTable))
 		table_name_ = settings_.value(NTPlotTable).toString();
 	else
-		table_name_ = "XeroPlot";
+		table_name_ = "/XeroPlot/";
 
 	monitor_.setIPAddress(ipaddr_.toStdString());
 	monitor_.start(table_name_.toStdString());
