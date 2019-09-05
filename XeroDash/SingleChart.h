@@ -55,7 +55,7 @@ private:
 	void setMinMax(const std::string& name, double minv, double maxv);
 	void getMinMax(const std::string& name, double &minv, double &maxv);
 
-	void dataAdded();
+	void dataComplete();
 	void activeChanged();
 
 	void createTimeAxis();

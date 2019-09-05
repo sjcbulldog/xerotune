@@ -312,7 +312,7 @@ void SingleChart::insertNode(QString ds, QString node)
 	if (desc_ == nullptr)
 	{
 		desc_ = desc;
-		(void)connect(desc_.get(), &PlotDescriptor::dataAdded, this, &SingleChart::dataAdded);
+		(void)connect(desc_.get(), &PlotDescriptor::dataCompleted, this, &SingleChart::dataComplete);
 		(void)connect(desc_.get(), &PlotDescriptor::activeChanged, this, &SingleChart::activeChanged);
 
 		if (title_.length() == 0)
@@ -437,13 +437,14 @@ void SingleChart::insertNode(QString ds, QString node)
 		axis->applyNiceNumbers();
 		time_->applyNiceNumbers();
 
-		dataAdded();
-
 		QFont font = chart()->titleFont();
 		font.setPointSize(20);
 		font.setBold(true);
 		chart()->setTitleFont(font);
 		chart()->setTitle(title_);
+
+		if (desc_->isConsolidated())
+			dataComplete();
 	}
 	else
 	{
@@ -485,7 +486,7 @@ void SingleChart::activeChanged()
 	}
 }
 
-void SingleChart::dataAdded()
+void SingleChart::dataComplete()
 {
 	size_t last = desc_->dataCount();
 	if (index_ == last)
@@ -530,7 +531,7 @@ void SingleChart::dataAdded()
 			time_->setRange(tminv_, tmaxv_);
 
 			QValueAxis* axis = findAxis(axisname);
-				axis->setRange(minv, maxv);
+			axis->setRange(minv, maxv);
 		}
 	}
 

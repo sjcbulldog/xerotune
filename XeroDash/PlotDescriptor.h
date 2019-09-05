@@ -15,9 +15,19 @@ public:
 	PlotDescriptor(QListWidgetItem* item);
 	virtual ~PlotDescriptor();
 
+	bool isConsolidated() const {
+		return consolidated_;
+	}
+
+	bool hasData(size_t index) {
+		if (index >= valid_.size())
+			return false;
+
+		return valid_[index];
+	}
+
 	double percentCaptured() {
-		double result =  static_cast<double>(data_.size()) / static_cast<double>(data_.size() + total_lost_) * 100.0;
-		return result;
+		return percent_;
 	}
 
 	QString name() const {
@@ -43,18 +53,7 @@ public:
 
 	void setActive(bool b);
 
-	bool dataDirty() const {
-		return data_dirty_;
-	}
-
-	void setDataDirty(bool b) {
-		lock_.lock();
-		data_dirty_ = b;
-		lock_.unlock();
-
-		if (b)
-			emitDataAdded();
-	}
+	void enable();
 
 	void clearColumns() {
 		columns_.clear();
@@ -88,33 +87,27 @@ public:
 		return (data_[row])[col];
 	}
 
-	int getIndex() const {
-		return index_;
-	}
-
-	int totalSamples() const {
-		return data_.size() + total_lost_;
-	}
+	void consolidate();
 
 signals:
 	void activeChanged();
 	void initedChanged();
-	void dataAdded();
+	void dataCompleted();
 
 private:
 	void emitActiveChanged();
 	void emitInitedChanged();
-	void emitDataAdded();
+	void emitDataCompleted();
 
 private:
+	double percent_;
 	QListWidgetItem* item_;
 	std::vector<std::string> columns_;
 	bool inited_;
 	bool active_;
 	std::mutex lock_;
-	bool data_dirty_;
-	int index_;
-	int total_lost_;
+	std::vector<bool> valid_;
 	std::vector<std::vector<double>> data_;
+	bool consolidated_;
 };
 

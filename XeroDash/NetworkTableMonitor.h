@@ -38,8 +38,7 @@ private:
 
 	void addDataToPlot();
 
-	void addData(QString plotname, QString key, int index);
-	void addData(QString plotname, QString key, int index, const wpi::ArrayRef<double>& data);
+	void addData(QString plotname, QString key);
 	void setInited(QString plotname, QString key, bool value);
 	void setActive(QString plotname, QString key, bool value);
 	void setColumns(QString plotname, QString key, const wpi::ArrayRef<std::string>& names);
@@ -56,6 +55,7 @@ private:
 	std::list<std::shared_ptr<PlotDescriptor>> all_plots_;
 	std::list<std::shared_ptr<PlotDescriptor>> new_plots_;
 	NT_EntryListener listener_;
+	bool last_was_data_;
 
 	static NetworkTableMonitor* theOne;
 };

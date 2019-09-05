@@ -18,6 +18,7 @@ NetworkTableMonitor::NetworkTableMonitor()
 	theOne = this;
 	running_ = false;
 	stopped_ = true;
+	last_was_data_ = false;
 }
 
 NetworkTableMonitor::~NetworkTableMonitor()
@@ -114,73 +115,62 @@ std::shared_ptr<PlotDescriptor> NetworkTableMonitor::findPlot(QString name)
 	return desc;
 }
 
-void NetworkTableMonitor::addData(QString plotname, QString datakey, int index)
+void NetworkTableMonitor::addData(QString plotname, QString datakey)
 {
 	auto desc = findPlot(plotname);
 
 	nt::NetworkTableInstance nt = nt::NetworkTableInstance::GetDefault();
 	auto table = nt.GetTable(datakey.toStdString());
 
-	int here = desc->getIndex();
+	int here = 0;
+	int endval;
+	auto value = table->GetValue("points");
 
-	while (here < index)
+	if (value == nullptr || !value->IsDouble())
+		return;
+
+	endval = static_cast<int>(value->GetDouble() + 0.5);
+	while (here < endval)
 	{
-		QString key = QString::number(here);
-		auto value = table->GetValue(key.toStdString());
-		if (value == nullptr)
-			break;
-
-		if (value->IsDoubleArray())
-			desc->addData(here, value->GetDoubleArray());
-
+		if (!desc->hasData(here))
+		{
+			QString key = "data/" + QString::number(here);
+			auto value = table->GetValue(key.toStdString());
+			if (value != nullptr && value->IsDoubleArray())
+				desc->addData(here, value->GetDoubleArray());
+		}
 		here++;
 	}
 }
 
-void NetworkTableMonitor::addData(QString plotname,QString datakey, int index, const wpi::ArrayRef<double> &data)
-{
-	//
-	// This finds an existing plot, or creates it if is does not exist
-	//
-	auto desc = findPlot(plotname);
-
-	if (desc->getIndex() < index)
-		addData(plotname, datakey, index - 1);
-
-	desc->addData(index, data);
-}
-
 void NetworkTableMonitor::setInited(QString plotname, QString key, bool b)
 {
+	last_was_data_ = false;
+
 	std::shared_ptr<PlotDescriptor> plot = findPlot(plotname);
 	plot->setInited(b);
 
 	if (b)
-		addData(plotname, key + "/data", 0xffffffff);
+		addData(plotname, key);
 }
 
 void NetworkTableMonitor::setActive(QString plotname, QString key, bool b)
 {
+	last_was_data_ = false;
+
 	auto desc = findPlot(plotname);
 	desc->setActive(b);
 
-	if (b)
-		addData(plotname, key + "/data", 0xffffffff);
+	addData(plotname, key);
 
-	if (b == false && desc->getIndex() > 0)
-	{
-		//
-		// Ok, we got data but the plot is not active.  This means the
-		// data is just sitting in the network table.  In this case, we fake a
-		// not-active to active to not-active transition for the plot
-		//
-		desc->setActive(true);
-		desc->setActive(false);
-	}
+	if (!b && desc->hasData())
+		desc->consolidate();
 }
 
 void NetworkTableMonitor::setColumns(QString plotname, QString key, const wpi::ArrayRef<std::string>& names)
 {
+	last_was_data_ = false;
+
 	auto desc = findPlot(plotname);
 
 	desc->clearColumns();
@@ -214,7 +204,10 @@ void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
 
 		int index = keyword.toInt(&ok);
 		if (ok)
-			addData(parent, key, index, notify.value->GetDoubleArray());
+		{
+			int pl = key.lastIndexOf('/');
+			addData(parent, key.mid(0, pl));
+		}
 	}
 	else if (keyword == "inited" && notify.value->IsBoolean())
 	{
@@ -256,7 +249,7 @@ void NetworkTableMonitor::updatedKey(const nt::EntryNotification& notify)
 
 		int index = keyword.toInt(&ok);
 		if (ok)
-			addData(parent, key, index, notify.value->GetDoubleArray());
+			addData(parent, key);
 	}
 
 	if (keyword == "inited" && notify.value->IsBoolean())
