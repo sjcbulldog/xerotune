@@ -106,118 +106,20 @@ std::shared_ptr<PlotDescriptor> NetworkTableMonitor::findPlot(QString name)
 			return desc;
 	}
 
-	return nullptr;
+	QListWidgetItem* item = new QListWidgetItem(name);
+	std::shared_ptr<PlotDescriptor> desc = std::make_shared<PlotDescriptor>(item);
+	new_plots_.push_back(desc);
+	all_plots_.push_back(desc);
+
+	return desc;
 }
 
-void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
+void NetworkTableMonitor::addData(QString plotname, QString datakey, int index)
 {
-	std::lock_guard guard(key_list_lock_);
-	QString qname(notify.name.c_str());
-	QStringList words = qname.split('/');
-	int index;
-	bool ok;
+	auto desc = findPlot(plotname);
 
-	if (words.size() <= 2)
-		return;
-
-	QString keyword = words.back();
-	words.pop_back();
-
-	QString plotname = words.back();
-	words.pop_back();
-
-	QString parent = words.back();
-	words.pop_back();
-
-	index = keyword.toInt(&ok);
-	if (ok && plotname == "data")
-	{
-		if (notify.value->IsDoubleArray())
-		{
-			auto desc = findPlot(parent);
-			if (desc == nullptr)
-			{
-				QListWidgetItem* item = new QListWidgetItem(parent);
-				desc = std::make_shared<PlotDescriptor>(item);
-				new_plots_.push_back(desc);
-				all_plots_.push_back(desc);
-			}
-
-			if (desc->getIndex() < index) {
-				qDebug() << "key data - desc index " << desc->getIndex() << " index " << index;
-				//
-				// We might be coming in the middle, see if other data is already in
-				// the network table
-				//
-				QString loc = notify.name.c_str();
-				int pl = loc.lastIndexOf('/') ;
-				getEarlierData(loc.mid(0, pl), desc, index);
-			}
-
-			auto& ndata = notify.value->GetDoubleArray();
-			desc->addData(index, ndata);
-		}
-	}
-	else if (keyword == "inited")
-	{
-		if (notify.value->IsBoolean())
-		{
-			std::shared_ptr<PlotDescriptor> plot = findPlot(plotname);
-			if (plot == nullptr)
-			{
-				//
-				// This is a new plot showing up.  Lets create the descriptor for the new plot
-				// and store in the list to be processed
-				//
-				QListWidgetItem* item = new QListWidgetItem(plotname);
-				plot = std::make_shared<PlotDescriptor>(item);
-				new_plots_.push_back(plot);
-				all_plots_.push_back(plot);
-			}
-
-			plot->setInited(notify.value->GetBoolean());
-		}
-	}
-	else if (keyword == "active")
-	{
-		if (notify.value->IsBoolean())
-		{
-			auto desc = findPlot(plotname);
-			if (desc == nullptr)
-			{
-				QListWidgetItem* item = new QListWidgetItem(parent);
-				desc = std::make_shared<PlotDescriptor>(item);
-				new_plots_.push_back(desc);
-				all_plots_.push_back(desc);
-			}
-
-			desc->setActive(notify.value->GetBoolean());
-		}
-	}
-	else if (keyword == "columns")
-	{
-		if (notify.value->IsStringArray())
-		{
-			auto desc = findPlot(plotname);
-			if (desc == nullptr)
-			{
-				QListWidgetItem* item = new QListWidgetItem(parent);
-				desc = std::make_shared<PlotDescriptor>(item);
-				new_plots_.push_back(desc);
-				all_plots_.push_back(desc);
-			}
-
-			desc->clearColumns();
-			for (auto& str : notify.value->GetStringArray())
-				desc->addColumn(str);
-		}
-	}
-}
-
-void NetworkTableMonitor::getEarlierData(QString loc, std::shared_ptr<PlotDescriptor> desc, int index)
-{
 	nt::NetworkTableInstance nt = nt::NetworkTableInstance::GetDefault();
-	auto table = nt.GetTable(loc.toStdString());
+	auto table = nt.GetTable(datakey.toStdString());
 
 	int here = desc->getIndex();
 
@@ -225,6 +127,8 @@ void NetworkTableMonitor::getEarlierData(QString loc, std::shared_ptr<PlotDescri
 	{
 		QString key = QString::number(here);
 		auto value = table->GetValue(key.toStdString());
+		if (value == nullptr)
+			break;
 
 		if (value->IsDoubleArray())
 			desc->addData(here, value->GetDoubleArray());
@@ -233,13 +137,64 @@ void NetworkTableMonitor::getEarlierData(QString loc, std::shared_ptr<PlotDescri
 	}
 }
 
-void NetworkTableMonitor::updatedKey(const nt::EntryNotification& notify)
+void NetworkTableMonitor::addData(QString plotname,QString datakey, int index, const wpi::ArrayRef<double> &data)
+{
+	//
+	// This finds an existing plot, or creates it if is does not exist
+	//
+	auto desc = findPlot(plotname);
+
+	if (desc->getIndex() < index)
+		addData(plotname, datakey, index - 1);
+
+	desc->addData(index, data);
+}
+
+void NetworkTableMonitor::setInited(QString plotname, QString key, bool b)
+{
+	std::shared_ptr<PlotDescriptor> plot = findPlot(plotname);
+	plot->setInited(b);
+
+	if (b)
+		addData(plotname, key + "/data", 0xffffffff);
+}
+
+void NetworkTableMonitor::setActive(QString plotname, QString key, bool b)
+{
+	auto desc = findPlot(plotname);
+	desc->setActive(b);
+
+	if (b)
+		addData(plotname, key + "/data", 0xffffffff);
+
+	if (b == false && desc->getIndex() > 0)
+	{
+		//
+		// Ok, we got data but the plot is not active.  This means the
+		// data is just sitting in the network table.  In this case, we fake a
+		// not-active to active to not-active transition for the plot
+		//
+		desc->setActive(true);
+		desc->setActive(false);
+	}
+}
+
+void NetworkTableMonitor::setColumns(QString plotname, QString key, const wpi::ArrayRef<std::string>& names)
+{
+	auto desc = findPlot(plotname);
+
+	desc->clearColumns();
+	for (auto& str : names)
+		desc->addColumn(str);
+}
+
+void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
 {
 	std::lock_guard guard(key_list_lock_);
 	QString qname(notify.name.c_str());
 	QStringList words = qname.split('/');
-	bool ok;
-	int index;
+	int pl = qname.lastIndexOf('/');
+	QString key = qname.mid(0, pl);
 
 	if (words.size() <= 2)
 		return;
@@ -253,58 +208,68 @@ void NetworkTableMonitor::updatedKey(const nt::EntryNotification& notify)
 	QString parent = words.back();
 	words.pop_back();
 
-	index = keyword.toInt(&ok);
-	if (ok && plotname == "data")
+	if (plotname == "data" && notify.value->IsDoubleArray())
 	{
-		if (notify.value->IsDoubleArray())
-		{
-			auto desc = findPlot(parent);
+		bool ok;
 
-			if (desc->getIndex() < index) {
-				//
-				// We might be coming in the middle, see if other data is already in
-				// the network table
-				//
-				QString loc = notify.name.c_str();
-				int pl = loc.lastIndexOf('/') ;
-				loc.chop(pl);
-				getEarlierData(loc, desc, index);
-			}
+		int index = keyword.toInt(&ok);
+		if (ok)
+			addData(parent, key, index, notify.value->GetDoubleArray());
+	}
+	else if (keyword == "inited" && notify.value->IsBoolean())
+	{
+		setInited(plotname, key, notify.value->GetBoolean());
+	}
+	else if (keyword == "active" && notify.value->IsBoolean())
+	{
+		setActive(plotname, key, notify.value->GetBoolean());
+	}
+	else if (keyword == "columns" && notify.value->IsStringArray())
+	{
+		setColumns(plotname, key, notify.value->GetStringArray());
+	}
+}
 
-			auto& ndata = notify.value->GetDoubleArray();
-			desc->addData(index, ndata);
-		}
+void NetworkTableMonitor::updatedKey(const nt::EntryNotification& notify)
+{
+	std::lock_guard guard(key_list_lock_);
+	QString qname(notify.name.c_str());
+	QStringList words = qname.split('/');
+	int pl = qname.lastIndexOf('/');
+	QString key = qname.mid(0, pl);
+
+	if (words.size() <= 2)
+		return;
+
+	QString keyword = words.back();
+	words.pop_back();
+
+	QString plotname = words.back();
+	words.pop_back();
+
+	QString parent = words.back();
+	words.pop_back();
+
+	if (plotname == "data" && notify.value->IsDoubleArray())
+	{
+		bool ok;
+
+		int index = keyword.toInt(&ok);
+		if (ok)
+			addData(parent, key, index, notify.value->GetDoubleArray());
 	}
 
-	if (keyword == "inited")
+	if (keyword == "inited" && notify.value->IsBoolean())
 	{
-		if (notify.value->IsBoolean())
-		{
-			auto desc = findPlot(plotname);
-			if (desc != nullptr)
-				desc->setInited(notify.value->GetBoolean());
-		}
+		setInited(plotname, key, notify.value->GetBoolean());
 	}
-	else if (keyword == "active")
+	else if (keyword == "active" && notify.value->IsBoolean())
 	{
-		if (notify.value->IsBoolean())
-		{
-			auto desc = findPlot(plotname);
-			if (desc != nullptr)
-				desc->setActive(notify.value->GetBoolean());
-		}
+		setActive(plotname, key, notify.value->GetBoolean());
 	}
-	else if (keyword == "columns")
+	else if (keyword == "columns" && notify.value->IsStringArray())
 	{
-		if (notify.value->IsStringArray())
-		{
-			auto desc = findPlot(plotname);
-
-			desc->clearColumns();
-
-			for (auto& str : notify.value->GetStringArray())
-				desc->addColumn(str);
-		}
+		setColumns(plotname, key, notify.value->GetStringArray());
 	}
 }
 

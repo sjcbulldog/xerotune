@@ -38,7 +38,11 @@ private:
 
 	void addDataToPlot();
 
-	void getEarlierData(QString loc, std::shared_ptr<PlotDescriptor> desc, int index);
+	void addData(QString plotname, QString key, int index);
+	void addData(QString plotname, QString key, int index, const wpi::ArrayRef<double>& data);
+	void setInited(QString plotname, QString key, bool value);
+	void setActive(QString plotname, QString key, bool value);
+	void setColumns(QString plotname, QString key, const wpi::ArrayRef<std::string>& names);
 
 private:
 	std::string table_name_;

@@ -26,20 +26,6 @@ void PlotDescriptor::setActive(bool b)
 		index_ = 0;
 		total_lost_ = 0;
 	}
-	else if (active_ && !b)
-	{
-		//
-		// We are transitioning from active to not active, we are done with data for this round
-		//
-		if (percentCaptured() < 90.0)
-			item_->setBackgroundColor(QColor(0xff, 0xc0, 0xc0, 0xFF));
-
-		QString tip;
-
-		tip = QString::number(totalSamples()) + " samples, ";
-		tip += QString::number(percentCaptured(), 'f', 0) + "% captured";
-		item_->setToolTip(tip);
-	}
 
 	active_ = b;
 	emitActiveChanged();
@@ -86,6 +72,21 @@ void PlotDescriptor::addData(int index, const std::vector<double>& data)
 	else
 		index_++;
 
+	//
+// We are transitioning from active to not active, we are done with data for this round
+//
+	if (percentCaptured() < 90.0)
+		item_->setBackgroundColor(QColor(0xff, 0xc0, 0xc0, 0xFF));
+	else
+		item_->setBackgroundColor(QColor(0x0ff, 0x0ff, 0xff, 0xff));
+
+	QString tip;
+
+	tip = QString::number(totalSamples()) + " samples, ";
+	tip += QString::number(percentCaptured(), 'f', 0) + "% captured";
+	item_->setToolTip(tip);
+
 	data_.push_back(data);
 	emitDataAdded();
+
 }
