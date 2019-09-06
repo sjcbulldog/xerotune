@@ -15,10 +15,6 @@ public:
 	PlotDescriptor(QListWidgetItem* item);
 	virtual ~PlotDescriptor();
 
-	bool isConsolidated() const {
-		return consolidated_;
-	}
-
 	bool hasData(size_t index) {
 		if (index >= valid_.size())
 			return false;
@@ -37,23 +33,6 @@ public:
 	QListWidgetItem* item() {
 		return item_;
 	}
-
-	bool inited() const {
-		return inited_;
-	}
-
-	void setInited(bool b) {
-		inited_ = b;
-		emitInitedChanged();
-	}
-
-	bool active() const {
-		return active_;
-	}
-
-	void setActive(bool b);
-
-	void enable();
 
 	void clearColumns() {
 		columns_.clear();
@@ -77,27 +56,37 @@ public:
 		return data_.size() > 0;
 	}
 
-	void addData(int index, const std::vector<double>& data);
+	void addData(size_t index, const std::vector<double>& data);
+	void resize(size_t index);
 
-	size_t dataCount() const {
+	bool isDataValid(size_t row) {
+		return valid_[row];
+	}
+
+	std::vector<std::vector<double>> data() {
+		return data_;
+	}
+
+	size_t dataSize() const {
 		return data_.size();
 	}
 
-	double data(size_t row, size_t col) {
-		return (data_[row])[col];
+	void signalDataAdded() {
+		emitDataAdded();
 	}
 
-	void consolidate();
+	void signalDataReset() {
+		emitDataReset();
+	}
+
 
 signals:
-	void activeChanged();
-	void initedChanged();
-	void dataCompleted();
+	void dataAdded();
+	void dataReset();
 
 private:
-	void emitActiveChanged();
-	void emitInitedChanged();
-	void emitDataCompleted();
+	void emitDataAdded();
+	void emitDataReset();
 
 private:
 	double percent_;
@@ -108,6 +97,5 @@ private:
 	std::mutex lock_;
 	std::vector<bool> valid_;
 	std::vector<std::vector<double>> data_;
-	bool consolidated_;
 };
 

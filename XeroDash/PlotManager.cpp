@@ -1,134 +1,128 @@
 #include "PlotManager.h"
 #include <QDebug>
 
-PlotManager::PlotManager(NetworkTableMonitor& monitor, QListWidget& plots, QListWidget &nodes) 
-				: monitor_(monitor), plots_(plots), nodes_(nodes)
-{
-	(void)connect(&plots_, &QListWidget::itemChanged, this, &PlotManager::itemChanged);
+typedef std::pair<std::chrono::high_resolution_clock::time_point, std::shared_ptr<PlotDescriptor>> pairitem;
 
-	nodes_.setSelectionMode(QAbstractItemView::SingleSelection);
+PlotManager::PlotManager(QListWidget& plots, QListWidget &nodes) : plots_(plots), nodes_(nodes)
+{
 	nodes_.setDragEnabled(true);
+	nodes_.setSelectionMode(QAbstractItemView::SingleSelection);
 	nodes_.setDragDropMode(QAbstractItemView::DragOnly);
 
 	plots_.setDragEnabled(false);
 	plots_.setDragDropMode(QAbstractItemView::NoDragDrop);
+	plots_.setSelectionMode(QAbstractItemView::SingleSelection);
+
+	(void)connect(&plots_, &QListWidget::currentItemChanged, this, &PlotManager::selectionChanged);
 
 	current_ = nullptr;
+	monitor_ = nullptr;
+
+	age_threshold_ = 100;
 }
 
 PlotManager::~PlotManager()
 {
-
 }
 
 std::shared_ptr<PlotDescriptor> PlotManager::find(QString name)
 {
-	return monitor_.findPlot(name);
-}
+	if (monitor_ == nullptr)
+		return nullptr;
 
-void PlotManager::update(std::shared_ptr<PlotDescriptor> desc)
-{
-	std::lock_guard<std::mutex> guard(lock_);
-	update_list_.push_back(desc);
-}
-
-std::shared_ptr<PlotDescriptor> PlotManager::getUpdatedPlotDesc()
-{
-	std::shared_ptr<PlotDescriptor> desc;
-	std::lock_guard<std::mutex> guard(lock_);
-
-	if (update_list_.size() > 0)
-	{
-		desc = update_list_.front();
-		update_list_.pop_front();
-	}
-
-	return desc;
-}
-
-void PlotManager::emitDatasetActive()
-{
-	emit datasetActive();
+	return monitor_->findPlot(name, false);
 }
 
 void PlotManager::tick()
 {
+	if (monitor_ == nullptr)
+		return;
+
 	std::shared_ptr<PlotDescriptor> desc;
 
 	//
 	// Check for new plot descriptors
 	//
+	desc = monitor_->getNewPlotDesc();
+	if (desc != nullptr)
+	{
+		QListWidgetItem* item = desc->item();
+		plots_.addItem(item);
+		emitNewPlot();
+
+		if (plots_.selectedItems().size() == 0)
+			item->setSelected(true);
+	}
+
+	desc = monitor_->getAddedDateaPlotDesc();
+	if (desc != nullptr)
+		desc->signalDataAdded();
+
+	desc = monitor_->getResetPlotDesc();
+	if (desc != nullptr)
+		desc->signalDataReset();
+
+	auto now = std::chrono::high_resolution_clock::now();
 	while (true)
 	{
-		desc = monitor_.getPlotDesc();
+		desc = monitor_->getAddedDateaPlotDesc();
 		if (desc == nullptr)
 			break;
 
-		QListWidgetItem* item = desc->item();
-		QString txt = item->text();
-		item->setFlags(Qt::NoItemFlags);
-		plots_.addItem(item);
-
-		(void)connect(desc.get(), &PlotDescriptor::activeChanged, this, [desc, this]() { this->update(desc); });
-		(void)connect(desc.get(), &PlotDescriptor::initedChanged, this, [desc, this]() { this->update(desc); });
-		(void)connect(desc.get(), &PlotDescriptor::dataCompleted, this, [desc, this]() { this->update(desc); });
-
-		if (desc->inited())
-			update(desc);
+		removeDataAddedList(desc);
+		data_added_list_.push_back(std::make_pair(now, desc));
 	}
 
 	//
-	// Check for updated plot descriptors
+	// Finally see if there are any data added plots that have not added data in the
+	// last age_threshold_ time
 	//
-	while (true)
+	std::list<pairitem> toremove;
+
+	for (auto pair : data_added_list_)
 	{
-		desc = getUpdatedPlotDesc();
-		if (desc == nullptr)
-			break;
-
-		QListWidgetItem* item = desc->item();
-		if (item == nullptr)
-			return;
-
-		if (desc->inited())
+		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - pair.first);
+		if (elapsed.count() > age_threshold_)
 		{
-			item->font().setBold(true);
-			item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-
-			if (desc->active())
-			{
-				emitDatasetActive();
-				item->setForeground(QBrush(QColor(0x00, 0x00, 0xff, 0xFF)));
-				plots_.repaint();
-			}
-			else
-			{
-				item->setForeground(QBrush(QColor(0x00, 0x00, 0x00, 0xFF)));
-				plots_.repaint();
-			}
-
+			pair.second->signalDataAdded();
+			toremove.push_back(pair);
 		}
-		else
-		{
-			desc->item()->setFlags(Qt::NoItemFlags);
-			desc->item()->setForeground(QBrush(QColor(0x00, 0x00, 0x00, 0xFF)));
-		}
+	}
+
+	for (auto item : toremove)
+		removeDataAddedList(item.second);
+}
+
+void PlotManager::removeDataAddedList(std::shared_ptr<PlotDescriptor> desc)
+{
+	auto it = std::find_if(data_added_list_.begin(), data_added_list_.end(), [desc](pairitem pair) { return pair.second == desc; });
+	if (it != data_added_list_.end())
+		data_added_list_.erase(it);
+}
+
+//
+// This is called in the GUI thread.  This is called when the
+// selected plot in the plot window changes.  We need to clear
+// the nodes window and repopulate based on the currently selected
+// plot
+//
+void PlotManager::selectionChanged(QListWidgetItem* current, QListWidgetItem* previous)
+{
+	nodes_.clear();
+
+	QListWidgetItem* item = plots_.selectedItems().front();
+	if (item != nullptr)
+	{
+		auto desc = monitor_->itemToDesc(item);
+		current_ = desc;
+		std::vector<std::string> cols = desc->columns();
+
+		for (size_t i = 1; i < cols.size(); i++)
+			nodes_.addItem(cols[i].c_str());
 	}
 }
 
-void PlotManager::itemChanged(QListWidgetItem* item)
+void PlotManager::emitNewPlot()
 {
-	auto desc = monitor_.itemToDesc(item);
-
-	if (desc != current_ && desc != nullptr && desc->hasColumns())
-	{
-		nodes_.clear();
-		for (const std::string& col : desc->columns())
-		{
-			QListWidgetItem* item = new QListWidgetItem(col.c_str());
-			nodes_.addItem(item);
-		}
-
-		current_ = desc;
-	}
+	emit newPlot();
 }

@@ -34,7 +34,9 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 	fmt.setFont(font);
 	ui.text_->setCurrentCharFormat(fmt);
 	ui.text_->append("Brought to you by FRC Team 1425, Error Code Xero\r\n\r\n");
-	connect(ui.buttons_, &QDialogButtonBox::accepted, this, &AboutDialog::accept);
+
+	ui.text_->append("Icon made by Freepik from www.flaticon.com\r\n");
+	(void)connect(ui.buttons_, &QDialogButtonBox::accepted, this, &AboutDialog::accept);
 }
 
 AboutDialog::~AboutDialog()

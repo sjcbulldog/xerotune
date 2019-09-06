@@ -59,7 +59,7 @@ private:
 
 private:
 	Ui::XeroDashWindowClass ui;
-	NetworkTableMonitor monitor_;
+	NetworkTableMonitor *monitor_;
 	QTimer* timer_;
 	PlotManager* plot_mgr_;
 	QSettings settings_;

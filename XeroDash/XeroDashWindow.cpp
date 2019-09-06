@@ -15,8 +15,14 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	editor_ = nullptr;
 
 	ui.setupUi(this);
-	plot_mgr_ = new PlotManager(monitor_, *ui.plots_, *ui.nodes_);
 	ui.graphs_->clear();
+
+
+	QString exedir = QCoreApplication::applicationDirPath();
+	QString imagepath = exedir + "/icon.png";
+	QPixmap image(imagepath);
+	QIcon icon(image);
+	setWindowIcon(icon);
 
 	(void)connect(ui.graphs_, &QTabWidget::tabCloseRequested, this, &XeroDashWindow::closeTab);
 	(void)connect(ui.graphs_->tabBar(), &QTabBar::tabBarDoubleClicked, this, &XeroDashWindow::editTab);
@@ -51,8 +57,9 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	else
 		table_name_ = "/XeroPlot/";
 
-	monitor_.setIPAddress(ipaddr_.toStdString());
-	monitor_.start(table_name_.toStdString());
+	monitor_ = new NetworkTableMonitor(ipaddr_.toStdString(), table_name_.toStdString());
+	plot_mgr_ = new PlotManager(*ui.plots_, *ui.nodes_);
+	plot_mgr_->setNetworkMonitor(monitor_);
 
 	newTab();
 
@@ -153,18 +160,17 @@ void XeroDashWindow::editPreferences()
 		table_name_ = "/" + table_name_;
 	settings_.setValue(NTPlotTable, table_name_);
 
-	if (monitor_.stop(30 * 1000))
-	{
-		monitor_.setIPAddress(ipaddr_.toStdString());
-		monitor_.start(table_name_.toStdString());
-	}
+	plot_mgr_->setNetworkMonitor(nullptr);
+	delete monitor_;
+	monitor_ = new NetworkTableMonitor(ipaddr_.toStdString(), table_name_.toStdString());
+	plot_mgr_->setNetworkMonitor(monitor_);
 
 	for (size_t i = 0; i < ui.graphs_->count(); i++)
 	{
 		QWidget* widget = ui.graphs_->widget(i);
 		QVariant v = widget->property(ContainerPropName);
-		void* ptr = static_cast<void*>(v.value<void*>());
-		PlotContainer* cnt = static_cast<PlotContainer*>(ptr);
+		int index = v.toInt();
+		PlotContainer* cnt = containers_[index];
 		cnt->setUnits(units_);
 	}
 }

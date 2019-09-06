@@ -7,13 +7,14 @@
 #include <list>
 #include <mutex>
 #include <memory>
+#include <chrono>
 
 class PlotManager : public QObject
 {
 	Q_OBJECT
 
 public:
-	PlotManager(NetworkTableMonitor &monitor, QListWidget &plots, QListWidget &nodes);
+	PlotManager(QListWidget &plots, QListWidget &nodes);
 	virtual ~PlotManager();
 
 	void tick();
@@ -24,22 +25,26 @@ public:
 
 	std::shared_ptr<PlotDescriptor> find(QString name);
 
+	void setNetworkMonitor(NetworkTableMonitor* monitor) {
+		monitor_ = monitor;
+	}
+
 signals:
-	void datasetActive();
+	void newPlot();
 
 private:
-	void emitDatasetActive();
-	std::shared_ptr<PlotDescriptor> getUpdatedPlotDesc();
-	void update(std::shared_ptr<PlotDescriptor> desc);
-	
-	void itemChanged(QListWidgetItem* item);
+	void selectionChanged(QListWidgetItem* current, QListWidgetItem* previous);
+	void emitNewPlot();
+	void removeDataAddedList(std::shared_ptr<PlotDescriptor> desc);
 
 private:
 	std::mutex lock_;
-	NetworkTableMonitor& monitor_;
+	NetworkTableMonitor *monitor_;
 	QListWidget& plots_;
 	QListWidget& nodes_;
 	std::shared_ptr<PlotDescriptor> current_;
-	std::list<std::shared_ptr<PlotDescriptor>> update_list_;
+	int64_t age_threshold_;
+
+	std::list<std::pair<std::chrono::high_resolution_clock::time_point, std::shared_ptr<PlotDescriptor>>> data_added_list_;
 };
 

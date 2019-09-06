@@ -1,6 +1,6 @@
 [
     {
-        "name": "PathFollowing",
+        "name": "LeftPos",
         "plots": [
             {
                 "nodes": [
@@ -13,7 +13,79 @@
                         "variable": "lapos"
                     }
                 ],
-                "title": "Left Distance"
+                "title": "TankDriveFollowPathAction-Tune_Tune"
+            }
+        ]
+    },
+    {
+        "name": "LeftVelocity",
+        "plots": [
+            {
+                "nodes": [
+                    {
+                        "dataset": "TankDriveFollowPathAction-Tune_Tune",
+                        "variable": "ltvel"
+                    },
+                    {
+                        "dataset": "TankDriveFollowPathAction-Tune_Tune",
+                        "variable": "lavel"
+                    }
+                ],
+                "title": "TankDriveFollowPathAction-Tune_Tune"
+            }
+        ]
+    },
+    {
+        "name": "RightPos",
+        "plots": [
+            {
+                "nodes": [
+                    {
+                        "dataset": "TankDriveFollowPathAction-Tune_Tune",
+                        "variable": "rtpos"
+                    },
+                    {
+                        "dataset": "TankDriveFollowPathAction-Tune_Tune",
+                        "variable": "rapos"
+                    }
+                ],
+                "title": "TankDriveFollowPathAction-Tune_Tune"
+            }
+        ]
+    },
+    {
+        "name": "RightVelocity",
+        "plots": [
+            {
+                "nodes": [
+                    {
+                        "dataset": "TankDriveFollowPathAction-Tune_Tune",
+                        "variable": "rtvel"
+                    },
+                    {
+                        "dataset": "TankDriveFollowPathAction-Tune_Tune",
+                        "variable": "ravel"
+                    }
+                ],
+                "title": "TankDriveFollowPathAction-Tune_Tune"
+            }
+        ]
+    },
+    {
+        "name": "All",
+        "plots": [
+            {
+                "nodes": [
+                    {
+                        "dataset": "TankDriveFollowPathAction-Tune_Tune",
+                        "variable": "ltpos"
+                    },
+                    {
+                        "dataset": "TankDriveFollowPathAction-Tune_Tune",
+                        "variable": "lapos"
+                    }
+                ],
+                "title": "TankDriveFollowPathAction-Tune_Tune"
             },
             {
                 "nodes": [
@@ -26,7 +98,7 @@
                         "variable": "rapos"
                     }
                 ],
-                "title": "Right Distance"
+                "title": "TankDriveFollowPathAction-Tune_Tune"
             },
             {
                 "nodes": [
@@ -39,7 +111,7 @@
                         "variable": "lavel"
                     }
                 ],
-                "title": "Left Velocity"
+                "title": "TankDriveFollowPathAction-Tune_Tune"
             },
             {
                 "nodes": [
@@ -52,7 +124,7 @@
                         "variable": "ravel"
                     }
                 ],
-                "title": "Right Velocity"
+                "title": "TankDriveFollowPathAction-Tune_Tune"
             }
         ]
     }

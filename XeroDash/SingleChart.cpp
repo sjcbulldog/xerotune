@@ -9,7 +9,9 @@ using namespace QtCharts;
 
 SingleChart::SingleChart(QString units, PlotManager &mgr, QWidget *parent) : QChartView(parent), plot_mgr_(mgr)
 {
-	chart()->setDropShadowEnabled(true);
+	chart()->setDropShadowEnabled(false);
+	chart()->setAnimationOptions(QChart::AnimationOption::NoAnimation);
+
 	setAcceptDrops(true);
 
 	time_ = nullptr;
@@ -17,8 +19,6 @@ SingleChart::SingleChart(QString units, PlotManager &mgr, QWidget *parent) : QCh
 
 	tminv_ = std::numeric_limits<double>::max();
 	tmaxv_ = std::numeric_limits<double>::min();
-
-	index_ = 0;
 
 	total_scroll_x_ = 0;
 	total_scroll_y_ = 0;
@@ -37,6 +37,11 @@ SingleChart::SingleChart(QString units, PlotManager &mgr, QWidget *parent) : QCh
 
 SingleChart::~SingleChart()
 {
+}
+
+void SingleChart::highlight(bool b)
+{
+	chart()->setDropShadowEnabled(b);
 }
 
 QJsonObject SingleChart::createJSONDescriptor()
@@ -84,6 +89,9 @@ bool SingleChart::init(QJsonObject obj)
 
 void SingleChart::setUnits(QString units)
 {
+	//
+	// TODO - this mostly works, but we really need to reconstruct the name
+	//
 	QString oldunits = units_;
 
 	units_ = units;
@@ -304,17 +312,35 @@ void SingleChart::insertNode(QString ds, QString node)
 	std::shared_ptr<PlotDescriptor> desc = plot_mgr_.find(ds);
 	if (desc == nullptr)
 	{
-		connection_ = connect(&plot_mgr_, &PlotManager::datasetActive, this, &SingleChart::datasetActive);
+		if (desc_ != nullptr)
+			return;
+
+		//
+		// The plot for this graph does not exist.  This happens when we are loading a layout
+		// but there is no plot data.  We mark the nodes as pending and we listen to the plot manager
+		// for new plots to exist.  If one matches what we are looking for, only then do we really add
+		// the nodes to the graph
+		//
+		connection_ = connect(&plot_mgr_, &PlotManager::newPlot, this, &SingleChart::newPlotAdded);
 		pending_.push_back(std::make_pair(ds, node));
 		return;
 	}
 
 	if (desc_ == nullptr)
 	{
+		//
+		// Here we assign the plot for this graph.  A graph can only contain data from a single
+		// plot.  The first value to plot assigned to a graph, sets the plot that is associated with
+		// the graph.
+		//
 		desc_ = desc;
-		(void)connect(desc_.get(), &PlotDescriptor::dataCompleted, this, &SingleChart::dataComplete);
-		(void)connect(desc_.get(), &PlotDescriptor::activeChanged, this, &SingleChart::activeChanged);
+		(void)connect(desc_.get(), &PlotDescriptor::dataAdded, this, &SingleChart::dataAdded);
+		(void)connect(desc_.get(), &PlotDescriptor::dataReset, this, &SingleChart::dataReset);
 
+
+		//
+		// If it has no title, it defaults to the title of the plot data
+		//
 		if (title_.length() == 0)
 			title_ = desc_->name();
 	}
@@ -332,12 +358,13 @@ void SingleChart::insertNode(QString ds, QString node)
 		}
 	}
 
-	if (!desc_->hasColumns())
-		return;
-
 	size_t colidx = desc_->getColumnIndexFromName(node.toStdString());
 	if (colidx == std::numeric_limits<size_t>::max())
 	{
+		//
+		// This should have never happened.  We are being safe here, but if we get to
+		// this point, we should have a valid value from a valid plot
+		//
 		QString msg = "Could not add variable '";
 		msg += node;
 		msg += "' to the graph";
@@ -349,6 +376,10 @@ void SingleChart::insertNode(QString ds, QString node)
 
 	if (colidx == 0)
 	{
+		//
+		// Do not add the independent variable (always assumed to be index zero) to
+		// the plot as it just makes a straight line
+		//
 		QString msg = "Could not add variable '";
 		msg += node;
 		msg += "' to the graph - it is the independent variable";
@@ -364,6 +395,12 @@ void SingleChart::insertNode(QString ds, QString node)
 	if (legend_ == nullptr)
 		createLegend();
 
+	//
+	// Try to guess an axis name to keep all like value plotted against
+	// a single axis.  For instance, all position values should be plotted
+	// against a single position axis.  All velocity values should be
+	// plotted against a single velocity axis.
+	//
 	QString axisname = nodeToAxis(node);
 	QValueAxis* axis = findAxis(axisname);
 	if (axis == nullptr)
@@ -390,63 +427,7 @@ void SingleChart::insertNode(QString ds, QString node)
 	double minv = std::numeric_limits<double>::max();
 
 	QLineSeries* series = findSeries(node);
-	if (series == nullptr)
-	{
-		series = new QLineSeries();
-		if (first_ == nullptr)
-			first_ = series;
-
-		(void)connect(series, &QLineSeries::hovered, this, [series, this](const QPointF& pt, bool state) { this->seriesHover(series, pt, state); });
-		(void)connect(series, &QLineSeries::clicked, this, [series, this](const QPointF& pt) { this->seriesClick(series, pt); });
-
-
-		series->setName(node);
-
-		for (size_t row = 0; row < index_; row++)
-		{
-			double d = desc_->data(row, colidx);
-			double t = desc_->data(row, 0);
-
-			if (d > maxv)
-				maxv = d;
-
-			if (d < minv)
-				minv = d;
-
-			if (t > tmaxv_)
-				tmaxv_ = t;
-
-			if (t < tminv_)
-				tminv_ = t;
-
-			series->append(t, d);
-		}
-
-		setMinMax(axisname.toStdString(), minv, maxv);
-
-		chart()->addSeries(series);
-
-		time_->setRange(tminv_, tmaxv_);
-
-		getMinMax(axisname.toStdString(), minv, maxv);
-		axis->setRange(minv, maxv);
-
-		series->attachAxis(time_);
-		series->attachAxis(axis);
-
-		axis->applyNiceNumbers();
-		time_->applyNiceNumbers();
-
-		QFont font = chart()->titleFont();
-		font.setPointSize(20);
-		font.setBold(true);
-		chart()->setTitleFont(font);
-		chart()->setTitle(title_);
-
-		if (desc_->isConsolidated())
-			dataComplete();
-	}
-	else
+	if (series != nullptr)
 	{
 		QString msg = "Could not add variable '";
 		msg += node;
@@ -454,44 +435,66 @@ void SingleChart::insertNode(QString ds, QString node)
 		QMessageBox box(QMessageBox::Icon::Critical,
 			"Error", msg, QMessageBox::StandardButton::Ok);
 		box.exec();
+		return;
 	}
+
+	series = new QLineSeries();
+	if (first_ == nullptr)
+		first_ = series;
+
+	(void)connect(series, &QLineSeries::hovered, this, [series, this](const QPointF& pt, bool state) { this->seriesHover(series, pt, state); });
+	(void)connect(series, &QLineSeries::clicked, this, [series, this](const QPointF& pt) { this->seriesClick(series, pt); });
+
+
+	series->setName(node);
+
+	setMinMax(axisname.toStdString(), minv, maxv);
+
+	chart()->addSeries(series);
+
+	time_->setRange(tminv_, tmaxv_);
+
+	getMinMax(axisname.toStdString(), minv, maxv);
+	axis->setRange(minv, maxv);
+
+	series->attachAxis(time_);
+	series->attachAxis(axis);
+
+	axis->applyNiceNumbers();
+	time_->applyNiceNumbers();
+
+	QFont font = chart()->titleFont();
+	font.setPointSize(20);
+	font.setBold(true);
+	chart()->setTitleFont(font);
+	chart()->setTitle(title_);
+
+	(void)connect(desc_.get(), &PlotDescriptor::dataAdded, this, &SingleChart::dataAdded);
+
+	// 
+	// Add any data that variable contains
+	//
+	dataAdded();
 }
 
-void SingleChart::activeChanged()
+void SingleChart::dataReset()
 {
-	if (desc_->active())
-	{
-		index_ = 0;
+	tminv_ = std::numeric_limits<double>::max();
+	tmaxv_ = std::numeric_limits<double>::min();
+	min_max_.clear();
 
-		for (QAbstractSeries* series : chart()->series())
+	for (QAbstractSeries* series : chart()->series())
+	{
+		QLineSeries* line = dynamic_cast<QLineSeries*>(series);
+		if (line != nullptr)
 		{
-			QLineSeries* line = dynamic_cast<QLineSeries*>(series);
 			line->clear();
 		}
-
-		tminv_ = std::numeric_limits<double>::max();
-		tmaxv_ = std::numeric_limits<double>::min();
-		min_max_.clear();
-	}
-	else
-	{
-		//
-		// Transitioned from active to inactive, data is all here
-		//
-		for (auto axis : chart()->axes())
-		{
-			QValueAxis* v = dynamic_cast<QValueAxis*>(axis);
-			v->applyNiceNumbers();
-		}
 	}
 }
 
-void SingleChart::dataComplete()
+void SingleChart::dataAdded()
 {
-	size_t last = desc_->dataCount();
-	if (index_ == last)
-		return;
-
 	for (QAbstractSeries* series : chart()->series())
 	{
 		double maxv = std::numeric_limits<double>::min();
@@ -500,13 +503,20 @@ void SingleChart::dataComplete()
 		QLineSeries* line = dynamic_cast<QLineSeries*>(series);
 		if (line != nullptr)
 		{
+			line->clear();
 			size_t colidx = desc_->getColumnIndexFromName(line->name().toStdString());
 			if (colidx < desc_->columns().size())
 			{
-				for (size_t i = index_; i < last; i++)
+				auto data = desc_->data();
+				for (size_t i = 0 ; i < data.size() ; i++)
 				{
-					double t = desc_->data(i, 0);
-					double d = desc_->data(i, colidx);
+					if (!desc_->isDataValid(i))
+						continue;
+
+					std::vector<double>& row = data[i];
+					double t = row[0];
+					double d = row[colidx];
+
 					line->append(t, d);
 
 					if (d > maxv)
@@ -534,8 +544,6 @@ void SingleChart::dataComplete()
 			axis->setRange(minv, maxv);
 		}
 	}
-
-	index_ = last;
 }
 
 void SingleChart::seriesHover(QLineSeries* ser, const QPointF& pt, bool state)
@@ -574,7 +582,7 @@ void SingleChart::seriesClick(QLineSeries* ser, const QPointF& pt)
 	callout_ = nullptr;
 }
 
-void SingleChart::datasetActive()
+void SingleChart::newPlotAdded()
 {
 	std::list<std::pair<QString, QString>> pending = pending_;
 	pending_.clear();

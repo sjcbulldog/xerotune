@@ -83,12 +83,6 @@
     <QtMoc Include="PlotContainer.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="SingleChart.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="XeroDashWindow.h">
-      <Filter>Generated Files</Filter>
-    </QtMoc>
     <QtMoc Include="PropertyEditor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -99,6 +93,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="AboutDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="XeroDashWindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -140,5 +137,20 @@
     <ClInclude Include="build.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SingleChart.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="XeroDash.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="XeroDash.ico" />
   </ItemGroup>
 </Project>

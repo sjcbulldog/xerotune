@@ -12,26 +12,43 @@
 
 NetworkTableMonitor* NetworkTableMonitor::theOne = nullptr;
 
-NetworkTableMonitor::NetworkTableMonitor()
+NetworkTableMonitor::NetworkTableMonitor(const std::string &ipaddr, const std::string &name)
 {
 	assert(theOne == nullptr);
 	theOne = this;
-	running_ = false;
-	stopped_ = true;
-	last_was_data_ = false;
+
+	ipaddr_ = ipaddr;
+	table_name_ = name;
+
+	inst_ = nt::NetworkTableInstance::GetDefault();
+	listener_ = inst_.AddEntryListener(table_name_, instCallback, 0xffffffff);
+	inst_.StartClient(ipaddr_.c_str());
 }
 
 NetworkTableMonitor::~NetworkTableMonitor()
 {
-	stop(1000 * 10);
+	inst_ = nt::NetworkTableInstance::GetDefault();
+	inst_.RemoveEntryListener(listener_);
+
 	assert(theOne == this);
 	theOne = nullptr;
 }
 
+void NetworkTableMonitor::instCallback(const nt::EntryNotification& notify)
+{
+	if (theOne == nullptr)
+		return;
+
+	theOne->update(notify);
+}
+
+//
+// Utilities for dealing with finding data
+//
+
 std::shared_ptr<PlotDescriptor> NetworkTableMonitor::itemToDesc(QListWidgetItem* item)
 {
 	std::lock_guard guard(key_list_lock_);
-
 	for (auto plot : all_plots_)
 	{
 		if (plot->item() == item)
@@ -41,83 +58,46 @@ std::shared_ptr<PlotDescriptor> NetworkTableMonitor::itemToDesc(QListWidgetItem*
 	return nullptr;
 }
 
-bool NetworkTableMonitor::setIPAddress(const std::string& addr)
+std::shared_ptr<PlotDescriptor> NetworkTableMonitor::findPlot(QString name, bool create)
 {
-	std::lock_guard guard(thread_lock_);
-
-	if (running_)
-		return false;
-
-	ipaddr_ = addr;
-	return true;
+	std::lock_guard guard(key_list_lock_);
+	return findPlotNoLock(name, create);
 }
 
-bool NetworkTableMonitor::start(const std::string& name)
+std::shared_ptr<PlotDescriptor> NetworkTableMonitor::findPlotNoLock(QString name, bool create)
 {
-	std::lock_guard guard(thread_lock_);
+	std::shared_ptr<PlotDescriptor> desc;
 
-	if (running_)
-		return false;
-
-	table_name_ = name;
-
-	running_ = true;
-	thread_ = std::thread(&NetworkTableMonitor::monitorThread, this);
-	return true;
-}
-
-bool NetworkTableMonitor::stop(int waitms)
-{
-	std::chrono::milliseconds delay(1);
-	std::lock_guard guard(thread_lock_);
-
-	inst_ = nt::NetworkTableInstance::GetDefault();
-	inst_.RemoveEntryListener(listener_);
-
-	stopped_ = false;
-	running_ = false;
-
-	while (!stopped_ && waitms > 0) {
-		std::this_thread::sleep_for(delay);
-		waitms--;
-	}
-
-	if (stopped_ && thread_.joinable())
-		thread_.join();
-
-
-	return stopped_;
-}
-
-void NetworkTableMonitor::instCallback(const nt::EntryNotification &notify)
-{
-	if (theOne == nullptr)
-		return;
-
-	theOne->update(notify);
-}
-
-std::shared_ptr<PlotDescriptor> NetworkTableMonitor::findPlot(QString name)
-{
-	std::lock_guard guard(thread_lock_);
-
-	for (auto desc : all_plots_)
+	for (auto it = all_plots_.begin(); it != all_plots_.end(); it++)
 	{
+		desc = *it;
 		if (desc->name() == name)
 			return desc;
 	}
 
-	QListWidgetItem* item = new QListWidgetItem(name);
-	std::shared_ptr<PlotDescriptor> desc = std::make_shared<PlotDescriptor>(item);
-	new_plots_.push_back(desc);
-	all_plots_.push_back(desc);
+	if (create)
+	{
+		QListWidgetItem* item = new QListWidgetItem(name);
+		item->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
+		desc = std::make_shared<PlotDescriptor>(item);
+		new_plots_.push_back(desc);
+		all_plots_.push_back(desc);
+	}
 
 	return desc;
 }
 
+//
+// Interacting with the network table
+//
+
+//
+// Extract all data from the network table that might exist for the given
+// plot.
+//
 void NetworkTableMonitor::addData(QString plotname, QString datakey)
 {
-	auto desc = findPlot(plotname);
+	auto desc = findPlotNoLock(plotname);
 
 	nt::NetworkTableInstance nt = nt::NetworkTableInstance::GetDefault();
 	auto table = nt.GetTable(datakey.toStdString());
@@ -141,46 +121,32 @@ void NetworkTableMonitor::addData(QString plotname, QString datakey)
 		}
 		here++;
 	}
-}
 
-void NetworkTableMonitor::setInited(QString plotname, QString key, bool b)
-{
-	last_was_data_ = false;
-
-	std::shared_ptr<PlotDescriptor> plot = findPlot(plotname);
-	plot->setInited(b);
-
-	if (b)
-		addData(plotname, key);
-}
-
-void NetworkTableMonitor::setActive(QString plotname, QString key, bool b)
-{
-	last_was_data_ = false;
-
-	auto desc = findPlot(plotname);
-	desc->setActive(b);
-
-	addData(plotname, key);
-
-	if (!b && desc->hasData())
-		desc->consolidate();
+	added_data_plots_.push_back(desc);
 }
 
 void NetworkTableMonitor::setColumns(QString plotname, QString key, const wpi::ArrayRef<std::string>& names)
 {
-	last_was_data_ = false;
-
-	auto desc = findPlot(plotname);
+	auto desc = findPlotNoLock(plotname);
 
 	desc->clearColumns();
 	for (auto& str : names)
 		desc->addColumn(str);
 }
 
+void NetworkTableMonitor::setPoints(QString plotname, QString key, int points)
+{
+	auto desc = findPlotNoLock(plotname);
+
+	if (points < desc->dataSize())
+	{
+		desc->resize(0);
+		reset_data_plots_.push_back(desc);
+	}
+}
+
 void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
 {
-	std::lock_guard guard(key_list_lock_);
 	QString qname(notify.name.c_str());
 	QStringList words = qname.split('/');
 	int pl = qname.lastIndexOf('/');
@@ -209,13 +175,10 @@ void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
 			addData(parent, key.mid(0, pl));
 		}
 	}
-	else if (keyword == "inited" && notify.value->IsBoolean())
+	else if (keyword == "points" && notify.value->IsDouble())
 	{
-		setInited(plotname, key, notify.value->GetBoolean());
-	}
-	else if (keyword == "active" && notify.value->IsBoolean())
-	{
-		setActive(plotname, key, notify.value->GetBoolean());
+		int count = static_cast<int>(notify.value->GetDouble() + 0.5);
+		setPoints(plotname, key, count);
 	}
 	else if (keyword == "columns" && notify.value->IsStringArray())
 	{
@@ -225,7 +188,6 @@ void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
 
 void NetworkTableMonitor::updatedKey(const nt::EntryNotification& notify)
 {
-	std::lock_guard guard(key_list_lock_);
 	QString qname(notify.name.c_str());
 	QStringList words = qname.split('/');
 	int pl = qname.lastIndexOf('/');
@@ -251,14 +213,10 @@ void NetworkTableMonitor::updatedKey(const nt::EntryNotification& notify)
 		if (ok)
 			addData(parent, key);
 	}
-
-	if (keyword == "inited" && notify.value->IsBoolean())
+	else if (keyword == "points" && notify.value->IsDouble())
 	{
-		setInited(plotname, key, notify.value->GetBoolean());
-	}
-	else if (keyword == "active" && notify.value->IsBoolean())
-	{
-		setActive(plotname, key, notify.value->GetBoolean());
+		int count = static_cast<int>(notify.value->GetDouble() + 0.5);
+		setPoints(plotname, key, count);
 	}
 	else if (keyword == "columns" && notify.value->IsStringArray())
 	{
@@ -268,7 +226,6 @@ void NetworkTableMonitor::updatedKey(const nt::EntryNotification& notify)
 
 void NetworkTableMonitor::deletedKey(const nt::EntryNotification& notify)
 {
-	std::lock_guard guard(key_list_lock_);
 	QString qname(notify.name.c_str());
 	QStringList words = qname.split('/');
 
@@ -284,15 +241,19 @@ void NetworkTableMonitor::deletedKey(const nt::EntryNotification& notify)
 
 void NetworkTableMonitor::update(const nt::EntryNotification& notify)
 {
+	std::lock_guard guard(key_list_lock_);
+
 	if ((notify.flags & NT_NOTIFY_NEW) == NT_NOTIFY_NEW)
 		addedKey(notify);
 	else if ((notify.flags & NT_NOTIFY_UPDATE) == NT_NOTIFY_UPDATE)
 		updatedKey(notify);
 	else if ((notify.flags & NT_NOTIFY_DELETE) == NT_NOTIFY_DELETE)
 		deletedKey(notify);
+
+	std::this_thread::yield();
 }
 
-std::shared_ptr<PlotDescriptor> NetworkTableMonitor::getPlotDesc()
+std::shared_ptr<PlotDescriptor> NetworkTableMonitor::getNewPlotDesc()
 {
 	std::shared_ptr<PlotDescriptor> desc;
 	std::lock_guard guard(key_list_lock_);
@@ -306,19 +267,30 @@ std::shared_ptr<PlotDescriptor> NetworkTableMonitor::getPlotDesc()
 	return desc;
 }
 
-void NetworkTableMonitor::monitorThread()
+std::shared_ptr<PlotDescriptor> NetworkTableMonitor::getAddedDateaPlotDesc()
 {
-	std::chrono::milliseconds delay(1000);
-	int flags;
+	std::shared_ptr<PlotDescriptor> desc;
+	std::lock_guard guard(key_list_lock_);
 
-	inst_ = nt::NetworkTableInstance::GetDefault();
-	listener_ = inst_.AddEntryListener(table_name_, instCallback, 0xffffffff);
-	inst_.StartClient(ipaddr_.c_str());
-
-	while (running_)
+	if (added_data_plots_.size() > 0)
 	{
-		std::this_thread::sleep_for(delay);
+		desc = added_data_plots_.front();
+		added_data_plots_.pop_front();
 	}
 
-	stopped_ = true;
+	return desc;
+}
+
+std::shared_ptr<PlotDescriptor> NetworkTableMonitor::getResetPlotDesc()
+{
+	std::shared_ptr<PlotDescriptor> desc;
+	std::lock_guard guard(key_list_lock_);
+
+	if (reset_data_plots_.size() > 0)
+	{
+		desc = reset_data_plots_.front();
+		reset_data_plots_.pop_front();
+	}
+
+	return desc;
 }

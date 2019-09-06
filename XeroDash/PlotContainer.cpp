@@ -76,9 +76,15 @@ void PlotContainer::setUnits(QString units)
 
 void PlotContainer::childFocused(SingleChart* ch)
 {
+	if (selected_ != nullptr)
+		selected_->highlight(false);
+
 	auto it = std::find(charts_.begin(), charts_.end(), ch);
 	if (it != charts_.end())
+	{
 		selected_ = ch;
+		selected_->highlight(true);
+	}
 }
 
 void PlotContainer::keyPressEvent(QKeyEvent *ev)

@@ -14,8 +14,6 @@
 
 class SingleChart : public QtCharts::QChartView
 {
-	Q_OBJECT
-
 public:
 	SingleChart(QString units, PlotManager& mgr, QWidget *parent = Q_NULLPTR);
 	~SingleChart();
@@ -37,6 +35,8 @@ public:
 
 	void editTitle();
 
+	void highlight(bool high);
+
 protected:
 	virtual void dragEnterEvent(QDragEnterEvent* event) override;
 	virtual void dragMoveEvent(QDragMoveEvent* event) override;
@@ -55,8 +55,8 @@ private:
 	void setMinMax(const std::string& name, double minv, double maxv);
 	void getMinMax(const std::string& name, double &minv, double &maxv);
 
-	void dataComplete();
-	void activeChanged();
+	void dataAdded();
+	void dataReset();
 
 	void createTimeAxis();
 	void createLegend();
@@ -64,7 +64,7 @@ private:
 	void seriesHover(QtCharts::QLineSeries* series, const QPointF& point, bool state);
 	void seriesClick(QtCharts::QLineSeries* series, const QPointF& point);
 
-	void datasetActive();
+	void newPlotAdded();
 
 	void editorDone();
 	void editorAborted();
@@ -77,7 +77,6 @@ private:
 	QtCharts::QLegend* legend_;
 	double tminv_, tmaxv_;
 	std::list<QString> node_names_;
-	size_t index_;
 	std::map<std::string, std::pair<double, double>> min_max_;
 
 	int total_scroll_x_;
