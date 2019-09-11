@@ -43,6 +43,7 @@ protected:
 	virtual void dragLeaveEvent(QDragLeaveEvent* event) override;
 	virtual void dropEvent(QDropEvent* ev) override;
 	virtual void keyPressEvent(QKeyEvent* ev) override;
+	virtual void mouseMoveEvent(QMouseEvent* ev) override;
 	virtual void focusInEvent(QFocusEvent* ev) override;
 
 private:
@@ -68,6 +69,12 @@ private:
 
 	void editorDone();
 	void editorAborted();
+
+	QStringList computeAverages();
+	QGraphicsLineItem* createLine(double stime, QPen p);
+	void displayAverages();
+	void clearAnnotations();
+	int findClosest(QVector<QPointF>& pts, double v);
 
 private:
 	PlotManager& plot_mgr_;
@@ -95,4 +102,16 @@ private:
 	QMetaObject::Connection connection_;
 
 	TabEditName* editor_;
+
+	QPointF mouse_;
+
+	bool first_point_;
+	bool first_valid_;
+	bool second_valid_;
+	double first_value_;
+	double second_value_;
+	QGraphicsLineItem *first_line_;
+	QGraphicsLineItem* second_line_;
+	QGraphicsRectItem* rect_item_;
+	std::list<QGraphicsSimpleTextItem*> text_items_;
 };

@@ -33,6 +33,13 @@ SingleChart::SingleChart(QString units, PlotManager &mgr, QWidget *parent) : QCh
 	right_axis_count_ = 0;
 
 	editor_ = nullptr;
+
+	first_point_ = true;
+
+	first_line_ = nullptr;
+	second_line_ = nullptr;
+
+	rect_item_ = nullptr;
 }
 
 SingleChart::~SingleChart()
@@ -109,6 +116,11 @@ void SingleChart::focusInEvent(QFocusEvent* ev)
 		c->childFocused(this);
 }
 
+void SingleChart::mouseMoveEvent(QMouseEvent* ev)
+{
+	mouse_ = chart()->mapToValue(QPointF(ev->x(), ev->y()));
+}
+
 void SingleChart::keyPressEvent(QKeyEvent* ev)
 {
 	switch (ev->key()) {
@@ -142,11 +154,189 @@ void SingleChart::keyPressEvent(QKeyEvent* ev)
 		for (auto callout : callouts_)
 			delete callout;
 		callouts_.clear();
+		first_valid_ = false;
+		second_valid_ = false;
+		first_point_ = true;
+		clearAnnotations();
+
+
 		break;
+	case Qt::Key_Space:
+		if (first_point_)
+		{
+			first_value_ = mouse_.rx();
+			first_point_ = false;
+
+			if (first_line_ != nullptr)
+			{
+				chart()->scene()->removeItem(first_line_);
+				delete first_line_;
+			}
+
+			first_line_ = createLine(first_value_, QPen(QColor(0x00, 0xFF, 0x00, 0xFF)));
+		}
+		else
+		{
+			second_value_ = mouse_.rx();
+			first_point_ = true;
+			if (second_line_ != nullptr)
+			{
+				chart()->scene()->removeItem(second_line_);
+				delete second_line_;
+			}
+
+			second_line_ = createLine(second_value_, QPen(QColor(0x00, 0x00, 0xFF, 0xFF)));
+			displayAverages();
+		}
+		break;
+
 	default:
 		QGraphicsView::keyPressEvent(ev);
 		break;
 	}
+}
+
+void SingleChart::clearAnnotations()
+{
+	if (first_line_ != nullptr)
+	{
+		chart()->scene()->removeItem(first_line_);
+		delete first_line_;
+	}
+	if (second_line_ != nullptr)
+	{
+		chart()->scene()->removeItem(second_line_);
+		delete second_line_;
+	}
+	if (rect_item_ != nullptr)
+	{
+		chart()->scene()->removeItem(rect_item_);
+		delete rect_item_;
+	}
+
+	for (auto item : text_items_)
+	{
+		chart()->scene()->removeItem(item);
+		delete item;
+	}
+	text_items_.clear();
+}
+
+int SingleChart::findClosest(QVector<QPointF> &pts, double v)
+{
+	double dist = std::numeric_limits<double>::max();
+	int ret = -1;
+
+
+	for (int i = 0; i < pts.size() ; i++)
+	{
+		double diff = std::fabs(pts[i].rx() - v);
+		if (diff < dist)
+		{
+			ret = i;
+			dist = diff;
+		}
+	}
+
+	return ret;
+}
+
+QStringList SingleChart::computeAverages()
+{
+	QStringList list;
+
+	for (auto series : chart()->series())
+	{
+		QLineSeries* line = dynamic_cast<QLineSeries *>(series);
+		if (line == nullptr)
+			continue;
+
+		QVector<QPointF> pts = line->pointsVector();
+		int start = findClosest(pts, first_value_);
+		int end = findClosest(pts, second_value_);
+
+		double total = 0.0;
+		for (int i = start; i <= end; i++)
+			total += pts[i].ry();
+
+		double avg = total / (end - start + 1);
+		QString one = series->name() + " " + QString::number(avg, 'f', 1);
+		list << one;
+	}
+	return list;
+}
+
+void SingleChart::displayAverages()
+{
+	int topbottom = 4;
+	int leftright = 8;
+	int fontsize = 22;
+	QRectF rect = chart()->plotArea();
+	QStringList avg = computeAverages();
+	QPointF p1 = chart()->mapToPosition(QPointF(first_value_, 0.0));
+	QPointF p2 = chart()->mapToPosition(QPointF(second_value_, 0.0));
+	double middle = (p1.rx() + p2.rx()) / 2;
+
+	for (auto item : text_items_)
+	{
+		chart()->scene()->removeItem(item);
+		delete item;
+	}
+	text_items_.clear() ;
+
+	if (rect_item_ != nullptr)
+	{
+		chart()->scene()->removeItem(rect_item_);
+		delete rect_item_;
+	}
+
+	if (avg.size() > 0)
+	{
+		int maxwidth = 0;
+		double height = 0;
+		for (const QString& txt : avg)
+		{
+			QGraphicsSimpleTextItem* item = chart()->scene()->addSimpleText(txt);
+			QFont f = item->font();
+			f.setPointSize(fontsize);
+			item->setFont(f);
+			QFontMetrics metrics(f);
+
+			int width = metrics.horizontalAdvance(txt);
+			maxwidth = std::max(maxwidth, width);
+
+			height += metrics.lineSpacing();
+			text_items_.push_back(item);
+		}
+
+		maxwidth += leftright * 2;
+		height += topbottom * 2;
+
+		double ypos = rect.center().ry() - height / 2 + topbottom;
+		for (auto item : text_items_)
+		{
+			QFont f = item->font();
+			QFontMetrics metrics(f);
+			int width = metrics.horizontalAdvance(item->text());
+			double xpos = middle - width / 2;
+			item->setPos(xpos, ypos);
+			ypos += metrics.lineSpacing();
+		}
+
+		QRectF rf(middle - maxwidth / 2, rect.center().ry() - height / 2, maxwidth, height);
+		QPen pen(QColor(0xFF, 0xFF, 0xFF, 0xFF));
+		pen.setWidth(4);
+		QBrush brush(QColor(0x00, 0x00, 0xFF, 0x40));
+
+		rect_item_ = chart()->scene()->addRect(rf, pen, brush);
+	}
+}
+
+QGraphicsLineItem* SingleChart::createLine(double stime, QPen p)
+{
+	QRectF rect = chart()->plotArea();
+	QPointF pt = chart()->mapToPosition(QPointF(stime, 0.0));
+	return chart()->scene()->addLine(pt.rx(), rect.top(), pt.rx(), rect.bottom(), p);
 }
 
 void SingleChart::setMinMax(const std::string& name, double minv, double maxv)
