@@ -173,7 +173,9 @@ void SingleChart::keyPressEvent(QKeyEvent* ev)
 				delete first_line_;
 			}
 
-			first_line_ = createLine(first_value_, QPen(QColor(0x00, 0xFF, 0x00, 0xFF)));
+			QPen p(QColor(0x00, 0xFF, 0x00, 0xFF));
+			p.setWidth(4);
+			first_line_ = createLine(first_value_, p);
 		}
 		else
 		{
@@ -185,7 +187,9 @@ void SingleChart::keyPressEvent(QKeyEvent* ev)
 				delete second_line_;
 			}
 
-			second_line_ = createLine(second_value_, QPen(QColor(0x00, 0x00, 0xFF, 0xFF)));
+			QPen p(QColor(0x00, 0x00, 0xFF, 0xFF));
+			p.setWidth(4);
+			second_line_ = createLine(second_value_, p);
 			displayAverages();
 		}
 		break;
@@ -256,11 +260,22 @@ QStringList SingleChart::computeAverages()
 		int end = findClosest(pts, second_value_);
 
 		double total = 0.0;
+		double minv = std::numeric_limits<double>::max();
+		double maxv = std::numeric_limits<double>::min();
 		for (int i = start; i <= end; i++)
-			total += pts[i].ry();
+		{
+			double v = pts[i].ry();
+			total += v;
 
-		double avg = total / (end - start + 1);
-		QString one = series->name() + " " + QString::number(avg, 'f', 1);
+			minv = std::min(v, minv);
+			maxv = std::max(v, maxv);
+		}
+
+		double avg = total / static_cast<double>((end - start + 1));
+		QString one = series->name() + ":";
+		one += "avg= " + QString::number(avg, 'f', 1);
+		one += "min= " + QString::number(minv, 'f', 1);
+		one += "max= " + QString::number(maxv, 'f', 1);
 		list << one;
 	}
 	return list;
