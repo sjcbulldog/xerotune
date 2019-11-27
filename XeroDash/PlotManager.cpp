@@ -110,10 +110,10 @@ void PlotManager::selectionChanged(QListWidgetItem* current, QListWidgetItem* pr
 {
 	nodes_.clear();
 
-	QListWidgetItem* item = plots_.selectedItems().front();
-	if (item != nullptr)
+	if (current != nullptr)
 	{
-		auto desc = monitor_->itemToDesc(item);
+		auto desc = monitor_->itemToDesc(current);
+		qDebug() << "Selecting " << desc->name();
 		current_ = desc;
 		std::vector<std::string> cols = desc->columns();
 

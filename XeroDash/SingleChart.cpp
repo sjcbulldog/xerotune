@@ -158,8 +158,6 @@ void SingleChart::keyPressEvent(QKeyEvent* ev)
 		second_valid_ = false;
 		first_point_ = true;
 		clearAnnotations();
-
-
 		break;
 	case Qt::Key_Space:
 		if (first_point_)
@@ -480,6 +478,12 @@ QString SingleChart::nodeToAxis(QString node)
 		return "Jerk (" + units_ + "/s^3)";
 	else if (node.contains("tick"))
 		return "Ticks (count)";
+	else if (node.contains("out"))
+		return "Power (% pwm)";
+	else if (node.contains("ang"))
+		return "Angle (degrees)";
+	else if (node.contains("head"))
+		return "Heading (degrees)";
 
 	return node;
 }
