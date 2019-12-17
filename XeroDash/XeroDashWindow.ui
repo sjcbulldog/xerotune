@@ -108,6 +108,8 @@
      <string>Help</string>
     </property>
     <addaction name="action_help_about_"/>
+    <addaction name="separator"/>
+    <addaction name="action_help_keyboard_"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -162,6 +164,11 @@
   <action name="action_graph_title_">
    <property name="text">
     <string>Graph Title ...</string>
+   </property>
+  </action>
+  <action name="action_help_keyboard_">
+   <property name="text">
+    <string>Keyboard</string>
    </property>
   </action>
  </widget>

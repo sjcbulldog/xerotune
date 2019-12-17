@@ -2,6 +2,7 @@
 #include "PlotContainer.h"
 #include "PropertyEditor.h"
 #include "AboutDialog.h"
+#include "KeyHints.h"
 #include <QLineEdit>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -78,7 +79,9 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	(void)connect(ui.action_load_layout_, &QAction::triggered, this, &XeroDashWindow::fileLoadLayout);
 	(void)connect(ui.action_save_layout, &QAction::triggered, this, &XeroDashWindow::fileSaveLayout);
 	(void)connect(ui.action_graph_title_, &QAction::triggered, this, &XeroDashWindow::editGraphTitle);
+	(void)connect(ui.action_help_keyboard_, &QAction::triggered, this, &XeroDashWindow::helpKeyboard);
 }
+
 
 void XeroDashWindow::closeEvent(QCloseEvent* event)
 {
@@ -283,6 +286,13 @@ void XeroDashWindow::helpAbout()
 {
 	AboutDialog about;
 	about.exec();
+}
+
+
+void XeroDashWindow::helpKeyboard()
+{
+	KeyHints hints;
+	hints.exec();
 }
 
 void XeroDashWindow::fileLoadLayout()

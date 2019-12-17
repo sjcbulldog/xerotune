@@ -135,6 +135,7 @@ copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
     <ClCompile Include="AboutDialog.cpp" />
     <ClCompile Include="Callout.cpp" />
     <ClCompile Include="EditableTabWidget.cpp" />
+    <ClCompile Include="KeyHints.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetworkTableMonitor.cpp" />
     <ClCompile Include="PlotContainer.cpp" />
@@ -152,6 +153,7 @@ copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="AboutDialog.ui" />
+    <QtUic Include="KeyHints.ui" />
     <QtUic Include="PropertyEditor.ui" />
     <QtUic Include="XeroDashWindow.ui" />
   </ItemGroup>
@@ -165,6 +167,14 @@ copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
     <ClInclude Include="EditableProperty.h" />
     <QtMoc Include="TabEditName.h" />
     <QtMoc Include="EditableTabWidget.h" />
+    <QtMoc Include="KeyHints.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)external\wpi\include;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCharts;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)external\wpi\include;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCharts;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE</IncludePath>
+    </QtMoc>
+    <ClInclude Include="GeneratedFiles\ui_AboutDialog.h" />
+    <ClInclude Include="GeneratedFiles\ui_KeyHints.h" />
+    <ClInclude Include="GeneratedFiles\ui_PropertyEditor.h" />
+    <ClInclude Include="GeneratedFiles\ui_XeroDashWindow.h" />
     <ClInclude Include="NetworkTableMonitor.h" />
     <ClInclude Include="PlotNode.h" />
     <ClInclude Include="PropertyEditorItemDelegate.h" />

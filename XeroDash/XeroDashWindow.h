@@ -38,6 +38,7 @@ private:
 	void editTabAborted();
 	void fileExit();
 	void helpAbout();
+	void helpKeyboard();
 	void fileLoadLayout();
 	void fileSaveLayout();
 	void editGraphTitle();

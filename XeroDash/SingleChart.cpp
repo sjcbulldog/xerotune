@@ -131,20 +131,52 @@ void SingleChart::keyPressEvent(QKeyEvent* ev)
 		chart()->zoomOut();
 		break;
 	case Qt::Key_Left:
-		chart()->scroll(-10, 0);
-		total_scroll_x_ -= 10;
+		if (ev->modifiers() & Qt::ShiftModifier)
+		{
+			chart()->scroll(-50, 0);
+			total_scroll_x_ -= 50;
+		}
+		else
+		{
+			chart()->scroll(-10, 0);
+			total_scroll_x_ -= 10;
+		}
 		break;
 	case Qt::Key_Right:
-		chart()->scroll(10, 0);
-		total_scroll_x_ += 10;
+		if (ev->modifiers() & Qt::ShiftModifier)
+		{
+			chart()->scroll(50, 0);
+			total_scroll_x_ += 50;
+		}
+		else
+		{
+			chart()->scroll(10, 0);
+			total_scroll_x_ += 10;
+		}
 		break;
 	case Qt::Key_Up:
-		chart()->scroll(0, 10);
-		total_scroll_y_ += 10;
+		if (ev->modifiers() & Qt::ShiftModifier)
+		{
+			chart()->scroll(0, 50);
+			total_scroll_y_ += 50;
+		}
+		else
+		{
+			chart()->scroll(0, 10);
+			total_scroll_y_ += 10;
+		}
 		break;
 	case Qt::Key_Down:
-		chart()->scroll(0, -10);
-		total_scroll_y_ -= 10;
+		if (ev->modifiers() & Qt::ShiftModifier)
+		{
+			chart()->scroll(0, -50);
+			total_scroll_y_ -= 50;
+		}
+		else
+		{
+			chart()->scroll(0, -10);
+			total_scroll_y_ -= 10;
+		}
 		break;
 	case Qt::Key_Home:
 		chart()->scroll(-total_scroll_x_, -total_scroll_y_);
