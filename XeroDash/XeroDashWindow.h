@@ -3,9 +3,11 @@
 #include "NetworkTableMonitor.h"
 #include "PlotManager.h"
 #include "TabEditName.h"
+#include "PlotCollection.h"
 #include <QtWidgets/QMainWindow>
 #include <QTimer>
 #include <QSettings>
+#include <QLabel>
 #include "ui_XeroDashWindow.h"
 #include <mutex>
 #include <list>
@@ -42,6 +44,8 @@ private:
 	void fileLoadLayout();
 	void fileSaveLayout();
 	void editGraphTitle();
+	void saveDataSet();
+	void loadDataSet();
 
 	QJsonDocument createDocument();
 	int findIndexByTag(int tag);
@@ -60,6 +64,7 @@ private:
 
 private:
 	Ui::XeroDashWindowClass ui;
+	PlotCollection collection_;
 	NetworkTableMonitor *monitor_;
 	QTimer* timer_;
 	PlotManager* plot_mgr_;
@@ -70,6 +75,7 @@ private:
 	QString ipaddr_;
 	QString table_name_;
 	TabEditName* editor_;
+	QLabel* status_;
 	int which_tab_;
 
 	std::list<std::shared_ptr<PlotDescriptor>> update_list_;

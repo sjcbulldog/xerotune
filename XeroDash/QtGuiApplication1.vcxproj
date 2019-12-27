@@ -134,10 +134,12 @@ copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
   <ItemGroup>
     <ClCompile Include="AboutDialog.cpp" />
     <ClCompile Include="Callout.cpp" />
+    <ClCompile Include="CSVToPlotDescriptor.cpp" />
     <ClCompile Include="EditableTabWidget.cpp" />
     <ClCompile Include="KeyHints.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetworkTableMonitor.cpp" />
+    <ClCompile Include="PlotCollection.cpp" />
     <ClCompile Include="PlotContainer.cpp" />
     <ClCompile Include="PlotDescriptor.cpp" />
     <ClCompile Include="PlotManager.cpp" />
@@ -164,6 +166,7 @@ copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
     <QtMoc Include="AboutDialog.h" />
     <ClInclude Include="build.h" />
     <ClInclude Include="Callout.h" />
+    <ClInclude Include="CSVToPlotDescriptor.h" />
     <ClInclude Include="EditableProperty.h" />
     <QtMoc Include="TabEditName.h" />
     <QtMoc Include="EditableTabWidget.h" />
@@ -176,6 +179,7 @@ copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
     <ClInclude Include="GeneratedFiles\ui_PropertyEditor.h" />
     <ClInclude Include="GeneratedFiles\ui_XeroDashWindow.h" />
     <ClInclude Include="NetworkTableMonitor.h" />
+    <ClInclude Include="PlotCollection.h" />
     <ClInclude Include="PlotNode.h" />
     <ClInclude Include="PropertyEditorItemDelegate.h" />
     <ClInclude Include="PropertyEditorTreeModel.h" />
@@ -188,13 +192,19 @@ copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
     </ClInclude>
     <QtMoc Include="PlotContainer.h" />
     <QtMoc Include="PlotManager.h" />
-    <QtMoc Include="PlotDescriptor.h" />
+    <QtMoc Include="PlotDescriptor.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)external\wpi\include;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCharts;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)external\wpi\include;.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCharts;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE</IncludePath>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="XeroDash.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="XeroDash.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="test\test1.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -2,9 +2,9 @@
 #include <QDebug>
 #include <fstream>
 
-PlotDescriptor::PlotDescriptor(QListWidgetItem *item)
+PlotDescriptor::PlotDescriptor(const std::string &name)
 {
-	item_ = item;
+	name_ = name;
 	inited_ = false;
 	active_ = false;
 }

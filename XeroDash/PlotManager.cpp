@@ -1,9 +1,10 @@
 #include "PlotManager.h"
+#include "PlotCollection.h"
 #include <QDebug>
 
 typedef std::pair<std::chrono::high_resolution_clock::time_point, std::shared_ptr<PlotDescriptor>> pairitem;
 
-PlotManager::PlotManager(QListWidget& plots, QListWidget &nodes) : plots_(plots), nodes_(nodes)
+PlotManager::PlotManager(PlotCollection& coll, QListWidget& plots, QListWidget &nodes) : plots_(plots), nodes_(nodes), collection_(coll)
 {
 	nodes_.setDragEnabled(true);
 	nodes_.setSelectionMode(QAbstractItemView::SingleSelection);
@@ -27,10 +28,7 @@ PlotManager::~PlotManager()
 
 std::shared_ptr<PlotDescriptor> PlotManager::find(QString name)
 {
-	if (monitor_ == nullptr)
-		return nullptr;
-
-	return monitor_->findPlot(name, false);
+	return collection_.findPlot(name.toStdString());
 }
 
 void PlotManager::tick()
@@ -46,7 +44,7 @@ void PlotManager::tick()
 	desc = monitor_->getNewPlotDesc();
 	if (desc != nullptr)
 	{
-		QListWidgetItem* item = desc->item();
+		QListWidgetItem* item = new QListWidgetItem(desc->name().c_str());
 		plots_.addItem(item);
 		emitNewPlot();
 
@@ -54,7 +52,7 @@ void PlotManager::tick()
 			item->setSelected(true);
 	}
 
-	desc = monitor_->getAddedDateaPlotDesc();
+	desc = monitor_->getAddedDataPlotDesc();
 	if (desc != nullptr)
 		desc->signalDataAdded();
 
@@ -65,7 +63,7 @@ void PlotManager::tick()
 	auto now = std::chrono::high_resolution_clock::now();
 	while (true)
 	{
-		desc = monitor_->getAddedDateaPlotDesc();
+		desc = monitor_->getAddedDataPlotDesc();
 		if (desc == nullptr)
 			break;
 
@@ -112,13 +110,18 @@ void PlotManager::selectionChanged(QListWidgetItem* current, QListWidgetItem* pr
 
 	if (current != nullptr)
 	{
-		auto desc = monitor_->itemToDesc(current);
-		qDebug() << "Selecting " << desc->name();
+		auto desc = collection_.findPlot(current->text().toStdString());
 		current_ = desc;
 		std::vector<std::string> cols = desc->columns();
 
 		for (size_t i = 1; i < cols.size(); i++)
 			nodes_.addItem(cols[i].c_str());
+
+		QString str;
+		str = current->text();
+		str += ", nodes " + QString::number(desc->columns().size());
+		str += ", datapoints " + QString::number(desc->data().size());
+		status_->setText(str);
 	}
 }
 

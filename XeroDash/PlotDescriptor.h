@@ -2,7 +2,6 @@
 
 #include <QObject>
 #include <QString>
-#include <QListWidgetItem>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -12,7 +11,7 @@ class PlotDescriptor : public QObject
 	Q_OBJECT;
 
 public:
-	PlotDescriptor(QListWidgetItem* item);
+	PlotDescriptor(const std::string &name);
 	virtual ~PlotDescriptor();
 
 	bool hasData(size_t index) {
@@ -22,28 +21,23 @@ public:
 		return valid_[index];
 	}
 
-	double percentCaptured() {
-		return percent_;
-	}
-
-	QString name() const {
-		return item_->text();
-	}
-
-	QListWidgetItem* item() {
-		return item_;
+	const std::string &name() const {
+		return name_;
 	}
 
 	void clearColumns() {
+		std::lock_guard<std::mutex> guard(lock_);
 		columns_.clear();
 	}
 
 	void addColumn(const std::string& col) {
+		std::lock_guard<std::mutex> guard(lock_);
 		columns_.push_back(col);
 	}
 	
-	const std::vector<std::string>& columns() {
-		return columns_;
+	std::vector<std::string> columns() {
+		std::vector<std::string> copy = columns_;
+		return copy;
 	}
 
 	size_t getColumnIndexFromName(const std::string& name) const;
@@ -79,7 +73,6 @@ public:
 		emitDataReset();
 	}
 
-
 signals:
 	void dataAdded();
 	void dataReset();
@@ -89,8 +82,7 @@ private:
 	void emitDataReset();
 
 private:
-	double percent_;
-	QListWidgetItem* item_;
+	std::string name_ ;
 	std::vector<std::string> columns_;
 	bool inited_;
 	bool active_;

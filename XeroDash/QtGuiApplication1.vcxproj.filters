@@ -75,11 +75,14 @@
     <ClCompile Include="KeyHints.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CSVToPlotDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlotCollection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="PlotDescriptor.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="PlotManager.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -102,6 +105,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="KeyHints.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="PlotDescriptor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -167,11 +173,20 @@
     <ClInclude Include="GeneratedFiles\ui_XeroDashWindow.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="CSVToPlotDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlotCollection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="XeroDash.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="XeroDash.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="test\test1.csv" />
   </ItemGroup>
 </Project>

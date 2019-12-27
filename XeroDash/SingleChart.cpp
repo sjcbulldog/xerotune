@@ -61,7 +61,7 @@ QJsonObject SingleChart::createJSONDescriptor()
 	{
 		QJsonObject nodeobj;
 
-		nodeobj["dataset"] = desc_->name();
+		nodeobj["dataset"] = desc_->name().c_str();
 		nodeobj["variable"] = name;
 
 		arr.append(nodeobj);
@@ -545,7 +545,7 @@ void SingleChart::createLegend()
 void SingleChart::insertNode(QString node)
 {
 	std::shared_ptr<PlotDescriptor> desc = plot_mgr_.current();
-	insertNode(desc->name(), node);
+	insertNode(desc->name().c_str(), node);
 }
 
 void SingleChart::insertNode(QString ds, QString node)
@@ -583,7 +583,7 @@ void SingleChart::insertNode(QString ds, QString node)
 		// If it has no title, it defaults to the title of the plot data
 		//
 		if (title_.length() == 0)
-			title_ = desc_->name();
+			title_ = desc_->name().c_str();
 	}
 	else
 	{

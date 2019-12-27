@@ -18,7 +18,6 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	ui.setupUi(this);
 	ui.graphs_->clear();
 
-
 	QString exedir = QCoreApplication::applicationDirPath();
 	QString imagepath = exedir + "/icon.png";
 	QPixmap image(imagepath);
@@ -58,8 +57,8 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	else
 		table_name_ = "/XeroPlot/";
 
-	monitor_ = new NetworkTableMonitor(ipaddr_.toStdString(), table_name_.toStdString());
-	plot_mgr_ = new PlotManager(*ui.plots_, *ui.nodes_);
+	monitor_ = new NetworkTableMonitor(collection_, ipaddr_.toStdString(), table_name_.toStdString());
+	plot_mgr_ = new PlotManager(collection_, *ui.plots_, *ui.nodes_);
 	plot_mgr_->setNetworkMonitor(monitor_);
 
 	newTab();
@@ -80,11 +79,17 @@ XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 	(void)connect(ui.action_save_layout, &QAction::triggered, this, &XeroDashWindow::fileSaveLayout);
 	(void)connect(ui.action_graph_title_, &QAction::triggered, this, &XeroDashWindow::editGraphTitle);
 	(void)connect(ui.action_help_keyboard_, &QAction::triggered, this, &XeroDashWindow::helpKeyboard);
-}
 
+	status_ = new QLabel("Ready");
+	statusBar()->addWidget(status_);
+
+	plot_mgr_->setStatusLabel(status_);
+}
 
 void XeroDashWindow::closeEvent(QCloseEvent* event)
 {
+	timer_->stop();
+
 	settings_.setValue(GeometrySettings, saveGeometry());
 	settings_.setValue(WindowStateSettings, saveState());
 
@@ -92,6 +97,9 @@ void XeroDashWindow::closeEvent(QCloseEvent* event)
 	for (int size : ui.splitter_->sizes())
 		stored.push_back(QVariant(size));
 	settings_.setValue(TopSplitterSettings, stored);
+
+	plot_mgr_->setNetworkMonitor(nullptr);
+	delete monitor_;
 }
 
 void XeroDashWindow::updatePlot(std::shared_ptr<PlotDescriptor> desc)
@@ -165,7 +173,7 @@ void XeroDashWindow::editPreferences()
 
 	plot_mgr_->setNetworkMonitor(nullptr);
 	delete monitor_;
-	monitor_ = new NetworkTableMonitor(ipaddr_.toStdString(), table_name_.toStdString());
+	monitor_ = new NetworkTableMonitor(collection_, ipaddr_.toStdString(), table_name_.toStdString());
 	plot_mgr_->setNetworkMonitor(monitor_);
 
 	for (size_t i = 0; i < ui.graphs_->count(); i++)
