@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PropertyEditorTreeModel.h"
-#include <QStyledItemDelegate>
+#include <QtWidgets/QStyledItemDelegate>
 
 class PropertyEditorItemDelegate : public QStyledItemDelegate
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QLineEdit>
+#include <QtWidgets/QLineEdit>
 
 class TabEditName : public QLineEdit
 {

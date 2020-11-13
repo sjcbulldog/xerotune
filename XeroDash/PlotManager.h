@@ -2,9 +2,9 @@
 
 #include <PlotDescriptor.h>
 #include <NetworkTableMonitor.h>
-#include <QObject>
-#include <QListWidget>
-#include <QLabel>
+#include <QtCore/QObject>
+#include <QtWidgets/QListWidget>
+#include <QtWidgets/QLabel>
 #include <list>
 #include <mutex>
 #include <memory>

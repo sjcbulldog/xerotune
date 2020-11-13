@@ -1,5 +1,5 @@
 #include "TabEditName.h"
-#include <QKeyEvent>
+#include <QtGui/QKeyEvent>
 
 TabEditName::TabEditName(QWidget *parent) : QLineEdit(parent)
 {

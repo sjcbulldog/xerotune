@@ -1,9 +1,9 @@
 #include "SingleChart.h"
 #include "PlotContainer.h"
-#include <QMimeData>
-#include <QListWidget>
-#include <QDebug>
-#include <QMessageBox>
+#include <QtCore/QMimeData>
+#include <QtWidgets/QListWidget>
+#include <QtCore/QDebug>
+#include <QtWidgets/QMessageBox>
 
 using namespace QtCharts;
 

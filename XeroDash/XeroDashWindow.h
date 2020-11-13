@@ -5,9 +5,9 @@
 #include "TabEditName.h"
 #include "PlotCollection.h"
 #include <QtWidgets/QMainWindow>
-#include <QTimer>
-#include <QSettings>
-#include <QLabel>
+#include <QtCore/QTimer>
+#include <QtCore/QSettings>
+#include <QtWidgets/QLabel>
 #include "ui_XeroDashWindow.h"
 #include <mutex>
 #include <list>

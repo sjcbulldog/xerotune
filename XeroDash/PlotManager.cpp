@@ -1,6 +1,6 @@
 #include "PlotManager.h"
 #include "PlotCollection.h"
-#include <QDebug>
+#include <QtCore/QDebug>
 
 typedef std::pair<std::chrono::high_resolution_clock::time_point, std::shared_ptr<PlotDescriptor>> pairitem;
 

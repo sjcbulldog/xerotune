@@ -3,12 +3,12 @@
 #include "PropertyEditor.h"
 #include "AboutDialog.h"
 #include "KeyHints.h"
-#include <QLineEdit>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QMessageBox>
-#include <QFileDialog>
+#include <QtWidgets/QLineEdit>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonArray>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QFileDialog>
 
 XeroDashWindow::XeroDashWindow(QWidget *parent) : QMainWindow(parent)
 {

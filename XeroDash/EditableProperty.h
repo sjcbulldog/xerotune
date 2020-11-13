@@ -1,6 +1,6 @@
 #pragma once
-#include <QString>
-#include <QVariant>
+#include <QtCore/QString>
+#include <QtCore/QVariant>
 
 class EditableProperty
 {

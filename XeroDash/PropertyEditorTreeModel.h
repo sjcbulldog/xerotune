@@ -1,10 +1,9 @@
 #pragma once
 
 #include "EditableProperty.h"
-#include <Qt>
-#include <QAbstractItemModel>
-#include <QHash>
-#include <QVariant>
+#include <QtCore/QAbstractItemModel>
+#include <QtCore/QHash>
+#include <QtCore/QVariant>
 #include <memory>
 #include <vector>
 

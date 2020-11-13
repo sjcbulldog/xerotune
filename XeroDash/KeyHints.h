@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QDialog>
+#include <QtWidgets/QDialog>
 #include "ui_KeyHints.h"
 
 class KeyHints : public QDialog

@@ -1,7 +1,7 @@
 #include "PropertyEditorItemDelegate.h"
-#include <QComboBox>
-#include <QPainter>
-#include <QDebug>
+#include <QtWidgets/QComboBox>
+#include <QtGui/QPainter>
+#include <QtCore/QDebug>
 
 QWidget* PropertyEditorItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {

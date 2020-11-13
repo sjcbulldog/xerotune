@@ -4,11 +4,11 @@
 #include "PlotDescriptor.h"
 #include "PlotManager.h"
 #include "TabEditName.h"
-#include <QChartView>
-#include <QValueAxis>
-#include <QLineSeries>
-#include <QString>
-#include <QJsonObject>
+#include <QtCharts/QChartView>
+#include <QtCharts/QValueAxis>
+#include <QtCharts/QLineSeries>
+#include <QtCore/QString>
+#include <QtCore/QJsonObject>
 #include <string>
 #include <map>
 

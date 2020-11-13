@@ -1,5 +1,5 @@
 #include "PlotDescriptor.h"
-#include <QDebug>
+#include <QtCore/QDebug>
 #include <fstream>
 
 PlotDescriptor::PlotDescriptor(const std::string &name)

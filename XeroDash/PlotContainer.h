@@ -2,9 +2,9 @@
 
 #include "PlotManager.h"
 #include "SingleChart.h"
-#include <QWidget>
-#include <QGridLayout>
-#include <QJsonArray>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QGridLayout>
+#include <QtCore/QJsonArray>
 #include <vector>
 
 class PlotContainer : public QWidget

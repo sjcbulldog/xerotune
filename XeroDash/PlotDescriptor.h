@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QObject>
-#include <QString>
+#include <QtCore/QObject>
+#include <QtCore/QString>
 #include <mutex>
 #include <string>
 #include <vector>

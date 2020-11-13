@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QTabWidget>
+#include <QtWidgets/QTabWidget>
 
 class EditableTabWidget : public QTabWidget
 {

@@ -1,5 +1,5 @@
 #include "PlotContainer.h"
-#include <QJsonObject>
+#include <QtCore/QJsonObject>
 
 PlotContainer::PlotContainer(PlotManager& mgr, QWidget *parent) : QWidget(parent), plot_mgr_(mgr)
 {

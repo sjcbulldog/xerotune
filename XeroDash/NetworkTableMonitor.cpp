@@ -3,9 +3,9 @@
 #include <networktables/EntryListenerFlags.h>
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
-#include <QString>
-#include <QStringList>
-#include <QDebug>
+#include <QtCore/QString>
+#include <QtCore/QStringList>
+#include <QtCore/QDebug>
 #include <chrono>
 #include <cassert>
 #include <algorithm>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PropertyEditorTreeModel.h"
-#include <QDialog>
+#include <QtWidgets/QDialog>
 #include "ui_PropertyEditor.h"
 
 class PropertyEditor : public QDialog
