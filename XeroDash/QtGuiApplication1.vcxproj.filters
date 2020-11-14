@@ -186,7 +186,4 @@
   <ItemGroup>
     <Image Include="XeroDash.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="test\test1.csv" />
-  </ItemGroup>
 </Project>

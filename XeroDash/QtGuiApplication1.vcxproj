@@ -14,7 +14,7 @@
     <ProjectGuid>{B12702AD-ABFB-343A-A199-8E24837244A3}</ProjectGuid>
     <Keyword>Qt4VSv1.0</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>XeroDash</ProjectName>
+    <ProjectName>XeroTune</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -85,7 +85,9 @@
     <PostBuildEvent>
       <Command>copy $(ProjectDir)*.png $(OutDir)
 $(QTDIR)\bin\windeployqt $(OutDir)$(ProjectName).exe
-copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
+copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)
+copy $(SolutionDir)installer\VC_redist.x64.exe $(OutDir)
+</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>D:\cygwin64\bin\bash incver.sh</Command>
@@ -125,10 +127,12 @@ copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
     <PostBuildEvent>
       <Command>copy $(ProjectDir)*.png $(OutDir)
 $(QTDIR)\bin\windeployqt $(OutDir)$(ProjectName).exe
-copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
+copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)
+copy $(SolutionDir)installer\VC_redist.x64.exe $(OutDir)
+</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>c:\cygwin64\bin\bash incver.sh</Command>
+      <Command>d:\cygwin64\bin\bash incver.sh</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -196,9 +200,6 @@ copy $(SolutionDir)external\wpi\bin\$(Configuration)\*.dll $(OutDir)</Command>
   </ItemGroup>
   <ItemGroup>
     <Image Include="XeroDash.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="test\test1.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
