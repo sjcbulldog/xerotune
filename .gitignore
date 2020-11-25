@@ -8,3 +8,4 @@ docs
 xeropathgen
 **/*.o
 /*/GeneratedFiles
+installer/*.exe

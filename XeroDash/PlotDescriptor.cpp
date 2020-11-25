@@ -24,6 +24,14 @@ size_t PlotDescriptor::getColumnIndexFromName(const std::string& name) const
 	return std::numeric_limits<size_t>::max();
 }
 
+void PlotDescriptor::getDataAndValid(std::vector<bool>& valid, std::vector<std::vector<double>>& data)
+{
+	std::lock_guard guard(lock_);
+
+	data = data_;
+	valid = valid_;
+}
+
 void PlotDescriptor::addData(size_t index, const std::vector<double>& data)
 {
 	std::lock_guard guard(lock_);
@@ -40,6 +48,8 @@ void PlotDescriptor::addData(size_t index, const std::vector<double>& data)
 
 	data_[index] = data;
 	valid_[index] = true;
+
+	qDebug() << "PlotDescriptor:: addData size = " << data_.size() << " " << valid_.size();
 }
 
 void PlotDescriptor::resize(size_t size)

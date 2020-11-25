@@ -25,6 +25,13 @@ public:
 		return name_;
 	}
 
+	void clearColumnsAndData() {
+		std::lock_guard<std::mutex> guard(lock_);
+		columns_.clear();
+		data_.clear();
+		valid_.clear();
+	}
+
 	void clearColumns() {
 		std::lock_guard<std::mutex> guard(lock_);
 		columns_.clear();
@@ -56,6 +63,8 @@ public:
 	bool isDataValid(size_t row) {
 		return valid_[row];
 	}
+
+	void getDataAndValid(std::vector<bool>& valid, std::vector<std::vector<double>> &data);
 
 	std::vector<std::vector<double>> data() {
 		return data_;

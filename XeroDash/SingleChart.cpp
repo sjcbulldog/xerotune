@@ -224,6 +224,10 @@ void SingleChart::keyPressEvent(QKeyEvent* ev)
 		}
 		break;
 
+	case Qt::Key_R:
+		dataAdded();
+		break;
+
 	default:
 		QGraphicsView::keyPressEvent(ev);
 		break;
@@ -288,6 +292,9 @@ QStringList SingleChart::computeAverages()
 		QVector<QPointF> pts = line->pointsVector();
 		int start = findClosest(pts, first_value_);
 		int end = findClosest(pts, second_value_);
+
+		if (start == -1 || end == -1)
+			continue;
 
 		double total = 0.0;
 		double minv = std::numeric_limits<double>::max();
@@ -748,29 +755,35 @@ void SingleChart::dataAdded()
 			size_t colidx = desc_->getColumnIndexFromName(line->name().toStdString());
 			if (colidx < desc_->columns().size())
 			{
-				auto data = desc_->data();
-				for (size_t i = 0 ; i < data.size() ; i++)
+				std::vector<std::vector<double>> data;
+				std::vector<bool> valid;
+
+				desc_->getDataAndValid(valid, data);
+				if (valid.size() == data.size())
 				{
-					if (!desc_->isDataValid(i))
-						continue;
+					for (size_t i = 0; i < data.size(); i++)
+					{
+						if (!valid[i])
+							continue;
 
-					std::vector<double>& row = data[i];
-					double t = row[0];
-					double d = row[colidx];
+						std::vector<double>& row = data[i];
+						double t = row[0];
+						double d = row[colidx];
 
-					line->append(t, d);
+						line->append(t, d);
 
-					if (d > maxv)
-						maxv = d;
+						if (d > maxv)
+							maxv = d;
 
-					if (d < minv)
-						minv = d;
+						if (d < minv)
+							minv = d;
 
-					if (t > tmaxv_)
-						tmaxv_ = t;
+						if (t > tmaxv_)
+							tmaxv_ = t;
 
-					if (t < tminv_)
-						tminv_ = t;
+						if (t < tminv_)
+							tminv_ = t;
+					}
 				}
 			}
 

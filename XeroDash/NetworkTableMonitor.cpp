@@ -69,19 +69,23 @@ void NetworkTableMonitor::addData(QString plotname, QString datakey)
 void NetworkTableMonitor::setColumns(QString plotname, QString key, const wpi::ArrayRef<std::string>& names)
 {
 	auto desc = findOrCreatePlot(plotname.toStdString());
-	desc->clearColumns();
+	desc->clearColumnsAndData();
 	for (auto& str : names)
 		desc->addColumn(str);
+
+	reset_data_plots_.push_back(desc);
+	desc->signalDataReset();
 }
 
 void NetworkTableMonitor::setPoints(QString plotname, QString key, int points)
 {
-	auto desc = findOrCreatePlot(plotname.toStdString());
-	if (points < desc->dataSize())
-	{
-		desc->resize(0);
-		reset_data_plots_.push_back(desc);
-	}
+	//auto desc = findOrCreatePlot(plotname.toStdString());
+	//if (points < desc->dataSize())
+	//{
+	//	desc->resize(0);
+	//	reset_data_plots_.push_back(desc);
+	//	desc->signalDataReset();
+	//}
 }
 
 void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
@@ -107,6 +111,8 @@ void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
 	{
 		bool ok;
 
+		qDebug() << "data key added";
+
 		int index = keyword.toInt(&ok);
 		if (ok)
 		{
@@ -116,11 +122,14 @@ void NetworkTableMonitor::addedKey(const nt::EntryNotification& notify)
 	}
 	else if (keyword == "points" && notify.value->IsDouble())
 	{
+		qDebug() << "points key added";
+
 		int count = static_cast<int>(notify.value->GetDouble() + 0.5);
 		setPoints(plotname, key, count);
 	}
 	else if (keyword == "columns" && notify.value->IsStringArray())
 	{
+		qDebug() << "columns key added";
 		setColumns(plotname, key, notify.value->GetStringArray());
 	}
 }
